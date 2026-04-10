@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anderson Copilot — Calendar & Conflict Scanner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Helvetica Neue',sans-serif;background:#00263A;color:#E8EEF2}
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(170deg,#003B5C 0%,#00263A 40%,#001820 100%)}
+.gate-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:48px 40px;text-align:center;max-width:420px;width:90%}
+.gate-logo{width:56px;height:56px;background:#FFD100;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;color:#003B5C;margin-bottom:20px}
+.gate-title{font-size:22px;font-weight:800;color:#FFF;margin-bottom:6px}
+.gate-sub{font-size:14px;color:#8AA4B8;margin-bottom:28px}
+.gate-input{width:100%;padding:14px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#FFF;font-size:16px;font-family:inherit;outline:none;margin-bottom:16px;text-align:center}
+.gate-input:focus{border-color:#FFD100}
+.gate-btn{width:100%;padding:14px;border-radius:10px;border:none;background:#FFD100;color:#003B5C;font-weight:700;font-size:16px;cursor:pointer;font-family:inherit}
+.gate-error{color:#D94F4F;font-size:13px;margin-top:12px;display:none}
+#app{display:none}
+</style>
+</head>
+<body>
+<div id="gate">
+<div class="gate-box">
+<div class="gate-logo">C</div>
+<div class="gate-title">Calendar & Conflict Scanner</div>
+<div class="gate-sub">Mode C — Event Calendar 2026-2027</div>
+<input type="password" id="pw" class="gate-input" placeholder="Access Code" onkeydown="if(event.key==='Enter')checkPw()">
+<button class="gate-btn" onclick="checkPw()">Enter</button>
+<div id="pw-error" class="gate-error">Incorrect code.</div>
+</div>
+</div>
+<div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script>
+const HASH="Anderson_ASA_Operations";
+function checkPw(){
+  if(document.getElementById("pw").value===HASH){
+    document.getElementById("gate").style.display="none";
+    document.getElementById("app").style.display="block";
+    const root=ReactDOM.createRoot(document.getElementById("app"));
+    root.render(React.createElement(App));
+  } else { document.getElementById("pw-error").style.display="block"; }
+}
+</script>
+<script type="text/babel">
+const {useState,useEffect}=React;
+
+const API="https://script.google.com/macros/s/AKfycbw2pOiLQZ7W3g1PNHMgbRAv1AE_KGIkk_m53Gtw7CEPwEEHl5S-J_-FsSJuUfEKsBQTRA/exec";
+
+const CO={nv:"#003B5C",dn:"#00263A",bl:"#2774AE",gd:"#FFD100",lt:"#E8EEF2",wh:"#FFF",mu:"#8AA4B8",rd:"#D94F4F",gn:"#3DAA6D",or:"#E8920D",cr:"rgba(255,255,255,0.1)"};
+
+const CLUB_TYPES={"Association for Real Estate at Anderson (AREA)":"Professional","Energy and Cleantech Association (ECA)":"Professional","Entertainment Management Association (EMA)":"Professional","Entrepreneur Association (EA)":"Professional","Healthcare Business Association (HBA)":"Professional","Investment Finance Association (IFA)":"Professional","Management Consulting Association (MCA)":"Professional","Marketing Association (MA)":"Professional","Net Impact":"Professional","Sports Business Association (SBA)":"Professional","Strategy & Operations Management Association (SOMA)":"Professional","Tech Business Association at Anderson (AnderTech)":"Professional","Video Game Business Association (VGBA)":"Professional","Adam Smith Society":"Affinity/Interest","AnderEats":"Affinity/Interest","Basketball Club at Anderson":"Affinity/Interest","Craft Beverages Club (CBC)":"Affinity/Interest","Indoor Adventure Club (IAC)":"Affinity/Interest","John Anderson Golf Club":"Affinity/Interest","Outdoor Adventure Club (OAC)":"Affinity/Interest","Soccer Club":"Affinity/Interest","Tennis Club at Anderson (TCA)":"Affinity/Interest","Wine Club at Anderson (WCA)":"Affinity/Interest","Admissions Ambassador Corps (AAC)":"Institution","Anderson Onboarding Committee (AOC)":"Institution","Alliance for Latinx Management at Anderson (ALMA)":"Identity","Asian Management Student Association (AMSA)":"Identity","Association of Veterans at Anderson (AVA)":"Identity","Black Business Students Association (BBSA)":"Identity","Christian Student Fellowship (CSF)":"Identity","European Business Association (EBA)":"Identity","First Generation Club (FGC)":"Identity","Greater China Business Association (GCBA)":"Identity","Japan America Business Association (JABA)":"Identity","Jewish Business Students Association (JBSA)":"Identity","Korean Business Student Association (KBSA)":"Identity","Latin American Business Association (LABA)":"Identity","Middle East and Africa Club (MEA)":"Identity","Muslim Business Students Association (MBSA)":"Identity","Out@Anderson":"Identity","Persian Business Association":"Preliminary","South Asian Business Association (SABA)":"Identity","Southeast Asian Business Association (SEABA)":"Identity","Taiwanese Student Business Association (TSBA)":"Identity","Women's Business Connection (WBC)":"Identity"};
+
+const TYPE_COLORS={Professional:"#2774AE",Identity:"#9B59B6","Affinity/Interest":"#E8920D",Institution:"#3DAA6D",Preliminary:"#8AA4B8"};
+
+const SKIP=["VP Ops Dashboard","ASA Operating Plans 2026-2027","ASA_Prior_Year_Import_Data","Import_Data","Dashboard"];
+
+const ACADEMIC=[{"d":"2026-07-27","l":"Anderson Onboarding Begins (Class of 2028)","t":"academic"},{"d":"2026-09-11","l":"Anderson Onboarding Ends","t":"academic"},{"d":"2026-09-17","l":"Fall Instruction Begins (1st Year)","t":"academic"},{"d":"2026-09-24","l":"Fall Instruction Begins (2nd Year)","t":"academic"},{"d":"2026-09-30","l":"AMR Student Launch","t":"capstone"},{"d":"2026-10-02","l":"BCC Student Launch","t":"capstone"},{"d":"2026-10-07","l":"AMR Student Launch (cont.)","t":"capstone"},{"d":"2026-10-26","l":"DOJ Week (1st Year FTMBA)","t":"doj"},{"d":"2026-10-27","l":"DOJ Week (1st Year FTMBA)","t":"doj"},{"d":"2026-10-28","l":"DOJ Week (1st Year FTMBA)","t":"doj"},{"d":"2026-10-29","l":"DOJ Week (1st Year FTMBA)","t":"doj"},{"d":"2026-10-30","l":"DOJ Week / AMR Company Launch","t":"doj"},{"d":"2026-11-11","l":"Veterans Day","t":"holiday"},{"d":"2026-11-13","l":"Rescheduled Holiday Classes (Veterans Day)","t":"makeup"},{"d":"2026-11-26","l":"Thanksgiving","t":"holiday"},{"d":"2026-11-27","l":"Thanksgiving","t":"holiday"},{"d":"2026-12-02","l":"AMR Mid-Point Presentations","t":"capstone"},{"d":"2026-12-04","l":"BCC Mid-Point Presentations / Fall Instruction Ends","t":"capstone"},{"d":"2026-12-07","l":"Fall Final Exams","t":"finals"},{"d":"2026-12-08","l":"Fall Final Exams","t":"finals"},{"d":"2026-12-09","l":"Fall Final Exams","t":"finals"},{"d":"2026-12-10","l":"Winter Break","t":"break"},{"d":"2026-12-11","l":"Winter Break","t":"break"},{"d":"2026-12-12","l":"Winter Break","t":"break"},{"d":"2026-12-13","l":"Winter Break","t":"break"},{"d":"2026-12-14","l":"Winter Break","t":"break"},{"d":"2026-12-15","l":"Winter Break","t":"break"},{"d":"2026-12-16","l":"Winter Break","t":"break"},{"d":"2026-12-17","l":"Winter Break","t":"break"},{"d":"2026-12-18","l":"Winter Break","t":"break"},{"d":"2026-12-19","l":"Winter Break","t":"break"},{"d":"2026-12-20","l":"Winter Break","t":"break"},{"d":"2026-12-21","l":"Winter Break","t":"break"},{"d":"2026-12-22","l":"Winter Break","t":"break"},{"d":"2026-12-23","l":"Winter Break","t":"break"},{"d":"2026-12-24","l":"Christmas","t":"holiday"},{"d":"2026-12-25","l":"Christmas","t":"holiday"},{"d":"2026-12-26","l":"Winter Break","t":"break"},{"d":"2026-12-27","l":"Winter Break","t":"break"},{"d":"2026-12-28","l":"Winter Break","t":"break"},{"d":"2026-12-29","l":"Winter Break","t":"break"},{"d":"2026-12-30","l":"Winter Break","t":"break"},{"d":"2026-12-31","l":"New Year's Eve","t":"holiday"},{"d":"2027-01-01","l":"New Year's Day","t":"holiday"},{"d":"2027-01-02","l":"Winter Break","t":"break"},{"d":"2027-01-03","l":"Winter Break","t":"break"},{"d":"2027-01-04","l":"Winter Instruction Begins","t":"academic"},{"d":"2027-01-09","l":"BCC Student Launch (Winter/Spring)","t":"capstone"},{"d":"2027-01-18","l":"MLK Day","t":"holiday"},{"d":"2027-01-22","l":"Rescheduled Holiday Classes (MLK Day)","t":"makeup"},{"d":"2027-02-15","l":"Presidents' Day","t":"holiday"},{"d":"2027-02-17","l":"AMR Rehearsal Presentations I","t":"capstone"},{"d":"2027-02-19","l":"BCC Rehearsal / Rescheduled Holiday Classes","t":"capstone"},{"d":"2027-02-24","l":"AMR Rehearsal Presentations II","t":"capstone"},{"d":"2027-03-05","l":"BCC Final Presentations / AMR Final Presentations","t":"capstone"},{"d":"2027-03-12","l":"Winter Instruction Ends","t":"academic"},{"d":"2027-03-15","l":"Winter Final Exams","t":"finals"},{"d":"2027-03-16","l":"Winter Final Exams","t":"finals"},{"d":"2027-03-17","l":"Winter Final Exams","t":"finals"},{"d":"2027-03-18","l":"Spring Break","t":"break"},{"d":"2027-03-19","l":"Spring Break","t":"break"},{"d":"2027-03-20","l":"Spring Break","t":"break"},{"d":"2027-03-21","l":"Spring Break","t":"break"},{"d":"2027-03-22","l":"Spring Break","t":"break"},{"d":"2027-03-23","l":"Spring Break","t":"break"},{"d":"2027-03-24","l":"Spring Break","t":"break"},{"d":"2027-03-25","l":"Spring Break","t":"break"},{"d":"2027-03-26","l":"C\u00e9sar Ch\u00e1vez Day","t":"holiday"},{"d":"2027-03-27","l":"Spring Break","t":"break"},{"d":"2027-03-28","l":"Spring Break","t":"break"},{"d":"2027-03-29","l":"Spring Instruction Begins","t":"academic"},{"d":"2027-05-21","l":"Rescheduled Holiday Classes (Memorial Day)","t":"makeup"},{"d":"2027-05-29","l":"BCC Final Presentations (Winter/Spring)","t":"capstone"},{"d":"2027-05-31","l":"Memorial Day","t":"holiday"},{"d":"2027-06-04","l":"Spring Instruction Ends","t":"academic"},{"d":"2027-06-07","l":"Spring Final Exams","t":"finals"},{"d":"2027-06-08","l":"Spring Final Exams","t":"finals"},{"d":"2027-06-09","l":"Spring Final Exams","t":"finals"},{"d":"2027-06-10","l":"Spring Final Exams","t":"finals"},{"d":"2027-06-11","l":"Commencement","t":"academic"},{"d":"2027-07-04","l":"Independence Day","t":"holiday"}];
+
+const MONTHS=[
+  {y:2026,m:6,l:"Jun 2026"},{y:2026,m:7,l:"Jul 2026"},{y:2026,m:8,l:"Aug 2026"},
+  {y:2026,m:9,l:"Sep 2026"},{y:2026,m:10,l:"Oct 2026"},{y:2026,m:11,l:"Nov 2026"},{y:2026,m:12,l:"Dec 2026"},
+  {y:2027,m:1,l:"Jan 2027"},{y:2027,m:2,l:"Feb 2027"},{y:2027,m:3,l:"Mar 2027"},
+  {y:2027,m:4,l:"Apr 2027"},{y:2027,m:5,l:"May 2027"},{y:2027,m:6,l:"Jun 2027"},
+  {y:2027,m:7,l:"Jul 2027"},{y:2027,m:8,l:"Aug 2027"}
+];
+
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function getMonthDays(year,month){
+  const first=new Date(year,month-1,1);
+  const last=new Date(year,month,0);
+  const startDay=first.getDay();
+  const totalDays=last.getDate();
+  const cells=[];
+  for(let i=0;i<startDay;i++)cells.push(null);
+  for(let d=1;d<=totalDays;d++)cells.push(d);
+  return cells;
+}
+
+function pad(n){return String(n).padStart(2,"0")}
+
+function makeICS(events){
+  let ics="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Anderson ASA//Copilot//EN\r\nCALSCALE:GREGORIAN\r\n";
+  for(const ev of events){
+    if(!ev.date)continue;
+    const d=ev.date.replace(/-/g,"");
+    ics+="BEGIN:VEVENT\r\n";
+    ics+="DTSTART;VALUE=DATE:"+d+"\r\n";
+    ics+="DTEND;VALUE=DATE:"+d+"\r\n";
+    ics+="SUMMARY:"+ev.name+" ("+ev.club+")\r\n";
+    ics+="DESCRIPTION:Club: "+ev.club+"\\nType: "+(ev.eventType||"")+"\\nRank: "+(ev.rank||"N/A")+"\\nBudget: $"+(ev.budget||"0")+"\\nOrganizer: "+(ev.organizer||"")+"\r\n";
+    ics+="END:VEVENT\r\n";
+  }
+  ics+="END:VCALENDAR\r\n";
+  return ics;
+}
+
+function makeGCalLink(ev){
+  const d=(ev.date||"").replace(/-/g,"");
+  const title=encodeURIComponent(ev.name+" ("+ev.club+")");
+  const details=encodeURIComponent("Club: "+ev.club+"\nType: "+(ev.eventType||"")+"\nRank: "+(ev.rank||"")+"\nBudget: $"+(ev.budget||"0"));
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+title+"&dates="+d+"/"+d+"&details="+details;
+}
+
+function App(){
+  const[allEvents,setAllEvents]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[error,setError]=useState("");
+  const[view,setView]=useState("calendar");
+  const[monthIdx,setMonthIdx]=useState(0);
+  const[typeFilter,setTypeFilter]=useState("All");
+  const[selectedDate,setSelectedDate]=useState(null);
+  const[loadProgress,setLoadProgress]=useState("");
+
+  useEffect(()=>{loadAllEvents()},[]);
+
+  const loadAllEvents=async()=>{
+    setLoading(true);setLoadProgress("Fetching club list...");
+    try{
+      const r=await fetch(API+"?action=status",{redirect:"follow"});
+      const d=await r.json();
+      if(!d.statuses){setError("No data");setLoading(false);return}
+      const clubs=d.statuses.filter(c=>!SKIP.some(s=>c.club.includes(s)));
+      const events=[];
+      for(let i=0;i<clubs.length;i++){
+        setLoadProgress("Loading "+clubs[i].club+" ("+(i+1)+"/"+clubs.length+")...");
+        try{
+          const r2=await fetch(API+"?action=load&clubName="+encodeURIComponent(clubs[i].club),{redirect:"follow"});
+          const d2=await r2.json();
+          if(d2.state&&d2.state.events){
+            const clubType=CLUB_TYPES[clubs[i].club]||clubs[i].type||"";
+            for(const ev of d2.state.events){
+              if(ev.name&&ev.name.trim()&&ev.projectedDate){
+                events.push({
+                  club:clubs[i].club,
+                  clubType,
+                  name:ev.name,
+                  date:ev.projectedDate,
+                  eventType:ev.type||"",
+                  rank:ev.rank||"",
+                  budget:ev.forecastedBudget||"",
+                  attendees:ev.expectedParticipants||"",
+                  venue:ev.preferredVenue||"",
+                  ie:ev.includesIE,
+                  sustainability:ev.includesSustainability,
+                  crossClub:ev.isCrossClub,
+                  partner:ev.clubPartner||"",
+                  organizer:ev.eventOrganizer||"",
+                  isConference:ev.type&&ev.type.toLowerCase().includes("conference"),
+                  isTop3:!!ev.rank
+                });
+              }
+            }
+          }
+        }catch(e){}
+      }
+      setAllEvents(events);setLoading(false);setLoadProgress("");
+    }catch(e){setError("Could not connect. This page works on the live GitHub Pages site.");setLoading(false)}
+  };
+
+  const getConflicts=(dateStr)=>{
+    const dayEvents=allEvents.filter(e=>e.date===dateStr);
+    const flags=[];
+    const conferences=dayEvents.filter(e=>e.isConference);
+    if(conferences.length>=2)flags.push({type:"hard",msg:"🔴 "+conferences.length+" conferences on same day: "+conferences.map(e=>e.club).join(", ")});
+    if(dayEvents.length>5)flags.push({type:"soft",msg:"🟡 "+dayEvents.length+" events on this day (max recommended: 5)"});
+    const acad=ACADEMIC.filter(a=>a.d===dateStr);
+    for(const a of acad){
+      if(a.t==="doj")flags.push({type:"hard",msg:"🔴 "+a.l+" — no club events during DOJ Week"});
+      else if(a.t==="capstone")flags.push({type:"soft",msg:"🟡 "+a.l+" — capstone conflict"});
+      else flags.push({type:"academic",msg:"⚠️ "+a.l});
+    }
+    return flags;
+  };
+
+  const filtered=typeFilter==="All"?allEvents:allEvents.filter(e=>e.clubType===typeFilter);
+  const month=MONTHS[monthIdx];
+  const cells=getMonthDays(month.y,month.m);
+  const monthStr=month.y+"-"+pad(month.m);
+
+  // Calendar conflicts summary
+  const allDates=[...new Set(allEvents.map(e=>e.date).filter(Boolean))];
+  const hardConflicts=allDates.filter(d=>{const c=allEvents.filter(e=>e.date===d&&e.isConference);return c.length>=2});
+  const softConflicts=allDates.filter(d=>allEvents.filter(e=>e.date===d).length>5);
+  const flaggedDates=[...new Set([...hardConflicts,...softConflicts])];
+
+  const btn=(active)=>({padding:"8px 16px",borderRadius:8,border:"none",fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:"inherit",background:active?"rgba(255,209,0,0.2)":"rgba(255,255,255,0.06)",color:active?CO.gd:CO.mu});
+  const pill=(bg,color)=>({display:"inline-block",padding:"2px 8px",borderRadius:10,fontSize:10,fontWeight:700,background:bg,color});
+
+  const renderCalendar=()=>(
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+        <button onClick={()=>setMonthIdx(Math.max(0,monthIdx-1))} style={btn(false)}>← Prev</button>
+        <h2 style={{fontSize:20,fontWeight:800,color:CO.wh}}>{month.l}</h2>
+        <button onClick={()=>setMonthIdx(Math.min(MONTHS.length-1,monthIdx+1))} style={btn(false)}>Next →</button>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:8}}>
+        {DAYS.map(d=><div key={d} style={{textAlign:"center",fontSize:11,fontWeight:700,color:CO.mu,padding:4}}>{d}</div>)}
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
+        {cells.map((day,i)=>{
+          if(!day)return <div key={i} style={{minHeight:90}}/>;
+          const dateStr=monthStr+"-"+pad(day);
+          const dayEvents=filtered.filter(e=>e.date===dateStr);
+          const conflicts=getConflicts(dateStr);
+          const acadList=ACADEMIC.filter(a=>a.d===dateStr);const acad=acadList[0];
+          const isToday=dateStr===new Date().toISOString().slice(0,10);
+          const hasHard=conflicts.some(c=>c.type==="hard");
+          const hasSoft=conflicts.some(c=>c.type==="soft");
+
+          return(
+            <div key={i} onClick={()=>setSelectedDate(dateStr)} style={{
+              minHeight:90,padding:4,borderRadius:6,cursor:"pointer",
+              background:hasHard?"rgba(217,79,79,0.15)":hasSoft?"rgba(232,146,13,0.1)":acad?"rgba(138,164,184,0.08)":"rgba(255,255,255,0.03)",
+              border:isToday?`2px solid ${CO.gd}`:selectedDate===dateStr?`2px solid ${CO.bl}`:`1px solid ${CO.cr}`,
+            }}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
+                <span style={{fontSize:12,fontWeight:isToday?800:600,color:isToday?CO.gd:CO.wh}}>{day}</span>
+                {dayEvents.length>0&&<span style={{fontSize:9,padding:"1px 5px",borderRadius:8,background:"rgba(39,116,174,0.3)",color:CO.bl}}>{dayEvents.length}</span>}
+              </div>
+              {acad&&<div style={{fontSize:8,color:acad.t==="finals"?CO.rd:acad.t==="holiday"?CO.or:CO.mu,marginBottom:2,lineHeight:1.2}}>{acad.l}</div>}
+              {dayEvents.slice(0,3).map((ev,j)=>
+                <div key={j} style={{fontSize:8,padding:"1px 3px",borderRadius:3,marginBottom:1,background:TYPE_COLORS[ev.clubType]||CO.mu,color:"#fff",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis",lineHeight:1.3}}>
+                  {ev.rank&&<span style={{fontWeight:800}}>#{ev.rank} </span>}{ev.name}
+                </div>
+              )}
+              {dayEvents.length>3&&<div style={{fontSize:8,color:CO.mu}}>+{dayEvents.length-3} more</div>}
+              {hasHard&&<div style={{fontSize:9}}>🔴</div>}
+              {hasSoft&&!hasHard&&<div style={{fontSize:9}}>🟡</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderDateDetail=()=>{
+    if(!selectedDate)return null;
+    const dayEvents=filtered.filter(e=>e.date===selectedDate);
+    const conflicts=getConflicts(selectedDate);
+    const d=new Date(selectedDate+"T12:00:00");
+    const dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+
+    return(
+      <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:20,border:`1px solid ${CO.cr}`,marginTop:16}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <h3 style={{fontSize:16,fontWeight:700,color:CO.wh}}>{dateLabel}</h3>
+          <span style={{fontSize:13,color:CO.mu}}>{dayEvents.length} event{dayEvents.length!==1?"s":""}</span>
+        </div>
+
+        {conflicts.length>0&&<div style={{background:"rgba(217,79,79,0.08)",borderRadius:8,padding:10,marginBottom:12}}>
+          {conflicts.map((c,i)=><p key={i} style={{margin:"0 0 4px",fontSize:12,color:c.type==="hard"?CO.rd:c.type==="soft"?CO.or:CO.mu}}>{c.msg}</p>)}
+        </div>}
+
+        {dayEvents.length===0?<p style={{color:CO.mu,fontSize:13}}>No events scheduled.</p>:
+          dayEvents.map((ev,i)=>
+            <div key={i} style={{padding:"10px 12px",borderRadius:8,marginBottom:8,background:"rgba(255,255,255,0.04)",borderLeft:`4px solid ${TYPE_COLORS[ev.clubType]||CO.mu}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                <div>
+                  {ev.rank&&<span style={{...pill("rgba(255,209,0,0.2)",CO.gd),marginRight:6}}>#{ev.rank} Top 3</span>}
+                  <span style={{fontSize:14,fontWeight:700,color:CO.wh}}>{ev.name}</span>
+                </div>
+                <span style={{...pill(TYPE_COLORS[ev.clubType]||CO.mu,"#fff")}}>{ev.clubType}</span>
+              </div>
+              <p style={{fontSize:12,color:CO.lt,margin:"0 0 4px"}}><strong>{ev.club}</strong></p>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,fontSize:11,color:CO.mu}}>
+                {ev.eventType&&<span>📋 {ev.eventType}</span>}
+                {ev.attendees&&<span>👥 {ev.attendees}</span>}
+                {ev.venue&&<span>📍 {ev.venue}</span>}
+                {ev.budget&&<span>💰 ${ev.budget}</span>}
+                {ev.organizer&&<span>🎯 {ev.organizer}</span>}
+                {ev.ie&&<span style={{color:CO.gn}}>IE ✓</span>}
+                {ev.sustainability&&<span style={{color:CO.gn}}>Sust ✓</span>}
+                {ev.crossClub&&<span style={{color:CO.bl}}>Cross-Club: {ev.partner||"Yes"}</span>}
+              </div>
+              <div style={{marginTop:6}}>
+                <a href={makeGCalLink(ev)} target="_blank" style={{fontSize:11,color:CO.bl,textDecoration:"underline",cursor:"pointer"}}>Add to Google Calendar</a>
+              </div>
+            </div>
+          )
+        }
+      </div>
+    );
+  };
+
+  const renderList=()=>{
+    const sorted=[...filtered].sort((a,b)=>a.date.localeCompare(b.date));
+    return(
+      <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,overflow:"hidden",border:`1px solid ${CO.cr}`}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr>
+            {["Date","Club","Type","Event","Rank","Attendees","Venue","Conflicts"].map((h,i)=>
+              <th key={i} style={{padding:"8px 10px",fontSize:11,fontWeight:700,color:CO.mu,textAlign:"left",borderBottom:`1px solid ${CO.cr}`}}>{h}</th>
+            )}
+          </tr></thead>
+          <tbody>
+            {sorted.map((ev,i)=>{
+              const conflicts=getConflicts(ev.date);
+              const hasConflict=conflicts.length>0;
+              return(
+                <tr key={i} style={{background:i%2===0?"rgba(255,255,255,0.02)":"transparent",borderBottom:`1px solid ${CO.cr}`}}>
+                  <td style={{padding:"6px 10px",fontSize:12,color:CO.lt,whiteSpace:"nowrap"}}>{ev.date}</td>
+                  <td style={{padding:"6px 10px",fontSize:12,color:CO.wh,fontWeight:600,maxWidth:200}}>{ev.club}</td>
+                  <td style={{padding:"6px 10px"}}><span style={{...pill(TYPE_COLORS[ev.clubType]||CO.mu,"#fff")}}>{ev.clubType}</span></td>
+                  <td style={{padding:"6px 10px",fontSize:12,color:CO.lt}}>{ev.rank&&<span style={{fontWeight:800,color:CO.gd,marginRight:4}}>#{ev.rank}</span>}{ev.name}</td>
+                  <td style={{padding:"6px 10px",fontSize:12,color:ev.rank?CO.gd:CO.mu}}>{ev.rank?"#"+ev.rank:"—"}</td>
+                  <td style={{padding:"6px 10px",fontSize:12,color:CO.mu}}>{ev.attendees||"—"}</td>
+                  <td style={{padding:"6px 10px",fontSize:12,color:CO.mu}}>{ev.venue||"—"}</td>
+                  <td style={{padding:"6px 10px",fontSize:12}}>{hasConflict?conflicts.map((c,j)=><span key={j} style={{display:"block",fontSize:10,color:c.type==="hard"?CO.rd:c.type==="soft"?CO.or:CO.mu}}>{c.msg}</span>):<span style={{color:CO.gn}}>✓</span>}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {sorted.length===0&&<div style={{padding:40,textAlign:"center",color:CO.mu}}>No events with dates found{typeFilter!=="All"?" for "+typeFilter+" clubs":""}.</div>}
+      </div>
+    );
+  };
+
+  const renderConflicts=()=>{
+    const issues=[];
+    const dateMap={};
+    for(const ev of allEvents){
+      if(!ev.date)continue;
+      if(!dateMap[ev.date])dateMap[ev.date]=[];
+      dateMap[ev.date].push(ev);
+    }
+    for(const[date,evs] of Object.entries(dateMap)){
+      const confs=evs.filter(e=>e.isConference);
+      if(confs.length>=2)issues.push({date,type:"hard",msg:"Two conferences on same day",events:confs});
+      if(evs.length>5)issues.push({date,type:"soft",msg:evs.length+" events (max recommended: 5)",events:evs});
+    }
+    for(const acad of ACADEMIC){
+      const evs=allEvents.filter(e=>e.date===acad.d);
+      if(evs.length>0)issues.push({date:acad.d,type:"academic",msg:acad.l+" — "+evs.length+" event(s) scheduled",events:evs});
+    }
+    issues.sort((a,b)=>{const o={hard:0,soft:1,academic:2};return(o[a.type]||3)-(o[b.type]||3)||a.date.localeCompare(b.date)});
+
+    return(
+      <div>
+        <div style={{background:"rgba(255,209,0,0.06)",borderRadius:12,padding:16,marginBottom:16,border:`1px solid rgba(255,209,0,0.15)`}}>
+          <p style={{margin:"0 0 6px",fontSize:14,fontWeight:700,color:CO.gd}}>📌 May 19 Calendaring Session Prep</p>
+          <p style={{margin:0,fontSize:12,color:CO.lt}}>The items below are flagged for discussion. Hard conflicts (🔴) must be resolved. Soft conflicts (🟡) are recommendations. Academic conflicts (⚠️) need coordination with Student Affairs.</p>
+        </div>
+
+        <div style={{display:"flex",gap:12,marginBottom:16}}>
+          <div style={{padding:"12px 20px",borderRadius:8,background:"rgba(217,79,79,0.1)",borderLeft:`4px solid ${CO.rd}`}}>
+            <div style={{fontSize:22,fontWeight:800,color:CO.rd}}>{issues.filter(i=>i.type==="hard").length}</div>
+            <div style={{fontSize:11,color:CO.mu}}>Hard Conflicts</div>
+          </div>
+          <div style={{padding:"12px 20px",borderRadius:8,background:"rgba(232,146,13,0.1)",borderLeft:`4px solid ${CO.or}`}}>
+            <div style={{fontSize:22,fontWeight:800,color:CO.or}}>{issues.filter(i=>i.type==="soft").length}</div>
+            <div style={{fontSize:11,color:CO.mu}}>Busy Days (5+)</div>
+          </div>
+          <div style={{padding:"12px 20px",borderRadius:8,background:"rgba(138,164,184,0.1)",borderLeft:`4px solid ${CO.mu}`}}>
+            <div style={{fontSize:22,fontWeight:800,color:CO.mu}}>{issues.filter(i=>i.type==="academic").length}</div>
+            <div style={{fontSize:11,color:CO.mu}}>Academic Conflicts</div>
+          </div>
+        </div>
+
+        {issues.length===0?<p style={{color:CO.gn,fontSize:14,padding:20}}>No conflicts detected!</p>:
+          issues.map((issue,i)=>
+            <div key={i} style={{background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"14px 16px",marginBottom:8,borderLeft:`4px solid ${issue.type==="hard"?CO.rd:issue.type==="soft"?CO.or:CO.mu}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <span style={{fontSize:13,fontWeight:700,color:CO.wh}}>{issue.date} — {issue.msg}</span>
+                <span style={{...pill(issue.type==="hard"?"rgba(217,79,79,0.2)":issue.type==="soft"?"rgba(232,146,13,0.2)":"rgba(138,164,184,0.2)",issue.type==="hard"?CO.rd:issue.type==="soft"?CO.or:CO.mu)}}>{issue.type==="hard"?"MUST RESOLVE":issue.type==="soft"?"REVIEW":"ACADEMIC"}</span>
+              </div>
+              {issue.events.map((ev,j)=>
+                <div key={j} style={{fontSize:12,color:CO.lt,padding:"2px 0"}}>
+                  {ev.rank&&<span style={{fontWeight:800,color:CO.gd}}>#{ev.rank} </span>}
+                  <strong>{ev.club}</strong>: {ev.name} {ev.eventType&&<span style={{color:CO.mu}}>({ev.eventType})</span>}
+                </div>
+              )}
+            </div>
+          )
+        }
+      </div>
+    );
+  };
+
+  return(
+    <div style={{minHeight:"100vh",background:`linear-gradient(170deg,${CO.nv} 0%,${CO.dn} 40%,#001820 100%)`}}>
+      <div style={{background:`linear-gradient(90deg,${CO.nv},${CO.bl})`,borderBottom:`3px solid ${CO.gd}`,padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{width:38,height:38,background:CO.gd,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:18,color:CO.nv}}>C</div>
+          <div><div style={{fontSize:15,fontWeight:700,color:CO.wh}}>Calendar & Conflict Scanner</div>
+            <div style={{fontSize:11,color:CO.gd}}>Mode C — 2026-2027</div></div></div>
+        <div style={{display:"flex",gap:8}}>
+          {[{v:"calendar",l:"📅 Calendar"},{v:"list",l:"📋 List"},{v:"top3",l:"🏆 Top 3"},{v:"conflicts",l:"⚠️ Conflicts"}].map(v=>
+            <button key={v.v} onClick={()=>setView(v.v)} style={btn(view===v.v)}>{v.l}</button>
+          )}
+          <button onClick={()=>{
+            const csv=[["Date","Club","Club Type","Event Name","Event Type","Rank","Est. Attendees","Venue","Budget","IE","Sustainability","Cross-Club","Partner","Organizer","Conflicts"]];
+            const sorted=[...allEvents].sort((a,b)=>a.date.localeCompare(b.date));
+            for(const ev of sorted){
+              const conf=getConflicts(ev.date);
+              csv.push([ev.date,ev.club,ev.clubType,ev.name,ev.eventType,ev.rank?"#"+ev.rank:"",ev.attendees,ev.venue,ev.budget,ev.ie?"Yes":"No",ev.sustainability?"Yes":"No",ev.crossClub?"Yes":"No",ev.partner,ev.organizer,conf.map(c=>c.msg).join("; ")]);
+            }
+            const out=csv.map(r=>r.map(c=>'"'+String(c||"").replace(/"/g,'""')+'"').join(",")).join("\n");
+            const b=new Blob([out],{type:"text/csv"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="ASA_Calendar_2026-2027.csv";a.click();URL.revokeObjectURL(u);
+          }} style={btn(false)}>⬇ CSV</button>
+          <button onClick={()=>{
+            const ics=makeICS(allEvents);
+            const b=new Blob([ics],{type:"text/calendar"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="ASA_Calendar_2026-2027.ics";a.click();URL.revokeObjectURL(u);
+          }} style={btn(false)}>⬇ ICS</button>
+          <button onClick={()=>{setLoading(true);loadAllEvents()}} style={btn(false)}>↻ Refresh</button>
+        </div>
+      </div>
+
+      <div style={{padding:"24px 32px",maxWidth:1200,margin:"0 auto"}}>
+        {loading?<div style={{textAlign:"center",padding:60,color:CO.mu}}>
+          <p style={{fontSize:16,marginBottom:8}}>Loading events from all clubs...</p>
+          <p style={{fontSize:13,color:CO.bl}}>{loadProgress}</p>
+          {error&&<p style={{marginTop:12,color:CO.or}}>{error}</p>}
+        </div>:<div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:8}}>
+            <div style={{display:"flex",gap:12,alignItems:"center"}}>
+              <span style={{fontSize:13,fontWeight:700,color:CO.wh}}>{filtered.length} events</span>
+              <span style={{fontSize:12,color:CO.mu}}>from {[...new Set(allEvents.map(e=>e.club))].length} clubs</span>
+              {flaggedDates.length>0&&<span style={{...pill("rgba(217,79,79,0.2)",CO.rd)}}>{flaggedDates.length} conflict{flaggedDates.length!==1?"s":""}</span>}
+            </div>
+            <div style={{display:"flex",gap:6}}>
+              {["All","Professional","Identity","Affinity/Interest","Institution"].map(t=>
+                <button key={t} onClick={()=>setTypeFilter(t)} style={{...btn(typeFilter===t),borderLeft:t!=="All"?`3px solid ${TYPE_COLORS[t]||CO.mu}`:"none"}}>{t}</button>
+              )}
+            </div>
+          </div>
+
+          <div style={{display:"flex",gap:6,marginBottom:16}}>
+            {Object.entries(TYPE_COLORS).map(([t,c])=>
+              <span key={t} style={{fontSize:10,display:"flex",alignItems:"center",gap:3,color:CO.mu}}>
+                <span style={{width:10,height:10,borderRadius:3,background:c,display:"inline-block"}}/>{t}
+              </span>
+            )}
+          </div>
+
+
+  const renderTop3=()=>{
+    const top3Events=allEvents.filter(e=>e.isTop3).sort((a,b)=>a.rank.localeCompare(b.rank)||a.club.localeCompare(b.club));
+    return(
+      <div>
+        <div style={{background:"rgba(255,209,0,0.06)",borderRadius:12,padding:16,marginBottom:16,border:"1px solid rgba(255,209,0,0.15)"}}>
+          <p style={{margin:"0 0 6px",fontSize:14,fontWeight:700,color:CO.gd}}>🏆 Top 3 Priority Events — All Clubs</p>
+          <p style={{margin:0,fontSize:12,color:CO.lt}}>These are the highest-priority events designated by each club for room prioritization and Building Services coordination.</p>
+        </div>
+        <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,overflow:"hidden",border:"1px solid "+CO.cr}}>
+          <table style={{width:"100%",borderCollapse:"collapse"}}>
+            <thead><tr>
+              {["Rank","Club","Type","Event","Date","Attendees","Venue","Organizer","IE","Sust.","Conflicts"].map((h,i)=>
+                <th key={i} style={{padding:"8px 10px",fontSize:11,fontWeight:700,color:CO.mu,textAlign:"left",borderBottom:"1px solid "+CO.cr}}>{h}</th>
+              )}
+            </tr></thead>
+            <tbody>
+              {top3Events.map((ev,i)=>{
+                const conflicts=getConflicts(ev.date);
+                return(
+                  <tr key={i} style={{background:ev.rank==="1"?"rgba(255,209,0,0.06)":i%2===0?"rgba(255,255,255,0.02)":"transparent",borderBottom:"1px solid "+CO.cr}}>
+                    <td style={{padding:"6px 10px",fontSize:14,fontWeight:800,color:CO.gd}}>#{ev.rank}</td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:CO.wh,fontWeight:600}}>{ev.club}</td>
+                    <td style={{padding:"6px 10px"}}><span style={{...pill(TYPE_COLORS[ev.clubType]||CO.mu,"#fff")}}>{ev.clubType}</span></td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:CO.lt}}>{ev.name}</td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:conflicts.length>0?CO.rd:CO.lt,whiteSpace:"nowrap"}}>{ev.date||"No date"}</td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:CO.mu}}>{ev.attendees||"—"}</td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:CO.mu}}>{ev.venue||"—"}</td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:CO.mu}}>{ev.organizer||"—"}</td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:ev.ie?CO.gn:CO.mu}}>{ev.ie?"✓":"—"}</td>
+                    <td style={{padding:"6px 10px",fontSize:12,color:ev.sustainability?CO.gn:CO.mu}}>{ev.sustainability?"✓":"—"}</td>
+                    <td style={{padding:"6px 10px",fontSize:10}}>{conflicts.length>0?conflicts.map((c,j)=><span key={j} style={{display:"block",color:c.type==="hard"?CO.rd:c.type==="soft"?CO.or:CO.mu}}>{c.msg}</span>):<span style={{color:CO.gn}}>✓</span>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {top3Events.length===0&&<div style={{padding:40,textAlign:"center",color:CO.mu}}>No Top 3 events submitted yet.</div>}
+        </div>
+      </div>
+    );
+  };
+
+          {view==="calendar"&&renderCalendar()}
+          {view==="calendar"&&renderDateDetail()}
+          {view==="list"&&renderList()}
+          {view==="top3"&&renderTop3()}
+          {view==="conflicts"&&renderConflicts()}
+        </div>}
+      </div>
+    </div>
+  );
+}
+</script>
+</body>
+</html>
