@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anderson Copilot — VP Ops Reviewer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Helvetica Neue',sans-serif;background:#00263A;color:#E8EEF2}
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(170deg,#003B5C 0%,#00263A 40%,#001820 100%)}
+.gate-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:48px 40px;text-align:center;max-width:420px;width:90%}
+.gate-logo{width:56px;height:56px;background:#2774AE;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;color:#FFF;margin-bottom:20px}
+.gate-title{font-size:22px;font-weight:800;color:#FFF;margin-bottom:6px}
+.gate-sub{font-size:14px;color:#8AA4B8;margin-bottom:28px}
+.gate-input{width:100%;padding:14px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#FFF;font-size:16px;font-family:inherit;outline:none;margin-bottom:16px;text-align:center}
+.gate-input:focus{border-color:#2774AE}
+.gate-btn{width:100%;padding:14px;border-radius:10px;border:none;background:#2774AE;color:#FFF;font-weight:700;font-size:16px;cursor:pointer;font-family:inherit}
+.gate-error{color:#D94F4F;font-size:13px;margin-top:12px;display:none}
+#app{display:none}
+</style>
+</head>
+<body>
+<div id="gate">
+<div class="gate-box">
+<div class="gate-logo">B</div>
+<div class="gate-title">VP Ops Reviewer</div>
+<div class="gate-sub">Mode B — Operating Plan Review Dashboard</div>
+<input type="password" id="pw" class="gate-input" placeholder="Reviewer Code" onkeydown="if(event.key==='Enter')checkPw()">
+<button class="gate-btn" onclick="checkPw()">Enter</button>
+<div id="pw-error" class="gate-error">Incorrect code.</div>
+</div>
+</div>
+<div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script>
+const HASH="Anderson_ASA_Operations";
+function checkPw(){
+  if(document.getElementById("pw").value===HASH){
+    document.getElementById("gate").style.display="none";
+    document.getElementById("app").style.display="block";
+    const root=ReactDOM.createRoot(document.getElementById("app"));
+    root.render(React.createElement(App));
+  } else { document.getElementById("pw-error").style.display="block"; }
+}
+</script>
+<script type="text/babel">
+const {useState,useEffect,useCallback}=React;
+const API="https://script.google.com/macros/s/AKfycbw2pOiLQZ7W3g1PNHMgbRAv1AE_KGIkk_m53Gtw7CEPwEEHl5S-J_-FsSJuUfEKsBQTRA/exec";
+
+const PRES={"Association for Real Estate at Anderson (AREA)":{"n":"Alex Morse","e":"alex.morse.2027@anderson.ucla.edu"},"Energy and Cleantech Association (ECA)":{"n":"Brevin Vent","e":"brevin.vent.2027@anderson.ucla.edu"},"Entertainment Management Association (EMA)":{"n":"Khari Hutchings & Virginia Eastwood","e":"khari.hutchings.2027@anderson.ucla.edu","e2":"virginia.eastwood.2025@anderson.ucla.edu"},"Entrepreneur Association (EA)":{"n":"Ynez Vinieris-Giancola","e":"ynez.vinieris-giancola.2027@anderson.ucla.edu"},"Healthcare Business Association (HBA)":{"n":"Natalie Doppelt","e":"natalie.doppelt.2027@anderson.ucla.edu"},"Investment Finance Association (IFA)":{"n":"Joshua Oh","e":"joshua.oh.2027@anderson.ucla.edu"},"Management Consulting Association (MCA)":{"n":"James Sidrak","e":"james.sidrak.2027@anderson.ucla.edu"},"Marketing Association (MA)":{"n":"Emily Schloss","e":"emily.schloss.2027@anderson.ucla.edu"},"Net Impact":{"n":"Gibby Kuria","e":"gibby.kuria.2027@anderson.ucla.edu"},"Sports Business Association (SBA)":{"n":"Daniela Castro-Alvarez","e":"daniela.castro-alvarez.2027@anderson.ucla.edu"},"Strategy & Operations Management Association (SOMA)":{"n":"Abimanyu Prabaswara Dharmawan","e":"abimanyu.dharmawan.2027@anderson.ucla.edu"},"Tech Business Association at Anderson (AnderTech)":{"n":"Shreya Vishwanath","e":"shreya.vishwanath.2027@anderson.ucla.edu"},"Video Game Business Association (VGBA)":{"n":"William Chen","e":"william.chen.2027@anderson.ucla.edu"},"Adam Smith Society":{"n":"Yokesh KC & Zachary Garland","e":"yokesh.kc.2027@anderson.ucla.edu","e2":"zachary.garland.2027@anderson.ucla.edu"},"AnderEats":{"n":"Trennedy Kleczewski","e":"trennedy.kleczewski.2027@anderson.ucla.edu"},"Craft Beverages Club (CBC)":{"n":"Ateken Abla & Andres Guraieb Elizalde","e":"ateken.abla.2027@anderson.ucla.edu","e2":"andres.guraieb.2027@anderson.ucla.edu"},"Indoor Adventure Club (IAC)":{"n":"Tanish Dhariyal","e":""},"John Anderson Golf Club":{"n":"Price Jarman","e":"price.jarman.2027@anderson.ucla.edu"},"Outdoor Adventure Club (OAC)":{"n":"Trenton Hall & Kaitlyn Mok","e":"trent.hall.2027@anderson.ucla.edu","e2":"kaitlyn.mok.2027@anderson.ucla.edu"},"Soccer Club":{"n":"Sebastian Ruiz & Martin Munoz","e":"sebastian.ruiz.2027@anderson.ucla.edu","e2":"martin.munoz.ugarte.2027@anderson.ucla.edu"},"Tennis Club at Anderson (TCA)":{"n":"Carlos Pantin & Santiago Vergara","e":"carlos.pantin.2027@anderson.ucla.edu","e2":"santiago.vergara.lira.2027@anderson.ucla.edu"},"Wine Club at Anderson (WCA)":{"n":"Mary Wang","e":"mary.wang.2027@anderson.ucla.edu"},"Admissions Ambassador Corps (AAC)":{"n":"Megan Belmonte","e":"megan.belmonte.2027@anderson.ucla.edu"},"Anderson Onboarding Committee (AOC)":{"n":"Neha Varda","e":""},"Alliance for Latinx Management at Anderson (ALMA)":{"n":"Elise Tomasello & Silvia Orozco","e":"elise.tomasello.2027@anderson.ucla.edu","e2":"silvia.orozco.2027@anderson.ucla.edu"},"Asian Management Student Association (AMSA)":{"n":"Jeff Yan & Sophia Cao","e":"jeffrey.yan.2027@anderson.ucla.edu","e2":"sophia.cao.2027@anderson.ucla.edu"},"Association of Veterans at Anderson (AVA)":{"n":"Dante Pestello","e":"dante.pestello.2027@anderson.ucla.edu"},"Black Business Students Association (BBSA)":{"n":"Kelsey Edwards & Isabel Gaspard","e":"Kelsey.Edwards.2027@anderson.ucla.edu","e2":"Isabel.Gaspard.2027@anderson.ucla.edu"},"Christian Student Fellowship (CSF)":{"n":"Alexis Burns & Wesley Wang","e":"alexis.burns.2027@anderson.ucla.edu","e2":"wesley.wang.2027@anderson.ucla.edu"},"European Business Association (EBA)":{"n":"Roddy Giles & Nikhil Chandaria","e":"roddy.giles.2027@anderson.ucla.edu","e2":"nikhil.chandaria.2027@anderson.ucla.edu"},"Greater China Business Association (GCBA)":{"n":"Jack Ge & Fiona Cao","e":"jack.ge.2027@anderson.ucla.edu","e2":"fiona.cao.2027@anderson.ucla.edu"},"Japan America Business Association (JABA)":{"n":"Yuka Harano & Yoichiro Kameoka","e":"yuka.harano.2027@anderson.ucla.edu","e2":"yoichiro.kameoka.2027@anderson.ucla.edu"},"Korean Business Student Association (KBSA)":{"n":"Allison Lee & Jinjae Sung","e":"allison.lee.2027@anderson.ucla.edu","e2":"jinjae.sung.2027@anderson.ucla.edu"},"Latin American Business Association (LABA)":{"n":"Manuel Suarez & Clara Tagle","e":"manuel.suarez.2027@anderson.ucla.edu","e2":"clara.tagle.2027@anderson.ucla.edu"},"Middle East and Africa Club (MEA)":{"n":"Nouran Hagali & Abdulaziz Alkhayyat","e":"nouran.hagali.2027@anderson.ucla.edu","e2":"abdulaziz.alkhayyat.2027@anderson.ucla.edu"},"Muslim Business Students Association (MBSA)":{"n":"Mustafa Abuelrish","e":"mustafa.abuelrish.2027@anderson.ucla.edu"},"Out@Anderson":{"n":"Jess Lardenoit & Beatriz Vianna","e":"jess.lardenoit.2027@anderson.ucla.edu","e2":"beatriz.vianna.2027@anderson.ucla.edu"},"Persian Business Association":{"n":"Shahab Askarian & Daniel Elahi","e":"shahab.askarian.2027@anderson.ucla.edu","e2":"daniel.elahi.2027@anderson.ucla.edu"},"South Asian Business Association (SABA)":{"n":"Yash Yagnik","e":"yash.yagnik.2027@anderson.ucla.edu"},"Southeast Asian Business Association (SEABA)":{"n":"Aurora Zafira","e":"aurora.zafira.2027@anderson.ucla.edu"},"Taiwanese Student Business Association (TSBA)":{"n":"William Chen & Shuo-Ru Li","e":"william.chen.2027@anderson.ucla.edu","e2":"shuo-ru.li.2027@anderson.ucla.edu"},"Basketball Club at Anderson":{"n":"Brian Palmigiano","e":"brian.palmigiano.2027@anderson.ucla.edu"}};
+
+const SKIP=["VP Ops Dashboard","ASA Operating Plans 2026-2027","ASA_Prior_Year_Import_Data","Import_Data","Dashboard"];
+const CLUB_TYPES={"Association for Real Estate at Anderson (AREA)":"Professional","Energy and Cleantech Association (ECA)":"Professional","Entertainment Management Association (EMA)":"Professional","Entrepreneur Association (EA)":"Professional","Healthcare Business Association (HBA)":"Professional","Investment Finance Association (IFA)":"Professional","Management Consulting Association (MCA)":"Professional","Marketing Association (MA)":"Professional","Net Impact":"Professional","Sports Business Association (SBA)":"Professional","Strategy & Operations Management Association (SOMA)":"Professional","Tech Business Association at Anderson (AnderTech)":"Professional","Video Game Business Association (VGBA)":"Professional","Venture Capital Club at Anderson (VCCA)":"Preliminary","Adam Smith Society":"Affinity/Interest","AnderEats":"Affinity/Interest","Basketball Club at Anderson":"Affinity/Interest","Craft Beverages Club (CBC)":"Affinity/Interest","Indoor Adventure Club (IAC)":"Affinity/Interest","John Anderson Golf Club":"Affinity/Interest","Outdoor Adventure Club (OAC)":"Affinity/Interest","Soccer Club":"Affinity/Interest","Tennis Club at Anderson (TCA)":"Affinity/Interest","Wine Club at Anderson (WCA)":"Affinity/Interest","Admissions Ambassador Corps (AAC)":"Institution","Anderson Onboarding Committee (AOC)":"Institution","Alliance for Latinx Management at Anderson (ALMA)":"Identity","Asian Management Student Association (AMSA)":"Identity","Association of Veterans at Anderson (AVA)":"Identity","Black Business Students Association (BBSA)":"Identity","Christian Student Fellowship (CSF)":"Identity","European Business Association (EBA)":"Identity","First Generation Club (FGC)":"Identity","Greater China Business Association (GCBA)":"Identity","Japan America Business Association (JABA)":"Identity","Jewish Business Students Association (JBSA)":"Identity","Korean Business Student Association (KBSA)":"Identity","Latin American Business Association (LABA)":"Identity","Middle East and Africa Club (MEA)":"Identity","Muslim Business Students Association (MBSA)":"Identity","Out@Anderson":"Identity","Persian Business Association":"Preliminary","South Asian Business Association (SABA)":"Identity","Southeast Asian Business Association (SEABA)":"Identity","Taiwanese Student Business Association (TSBA)":"Identity","Women's Business Connection (WBC)":"Identity"};
+const TYPES=["All","Professional","Identity","Affinity/Interest","Institution","Preliminary"];
+const CO={nv:"#003B5C",dn:"#00263A",bl:"#2774AE",gd:"#FFD100",lt:"#E8EEF2",wh:"#FFF",mu:"#8AA4B8",rd:"#D94F4F",gn:"#3DAA6D",or:"#E8920D",cr:"rgba(255,255,255,0.1)"};
+
+const TYPE_COLORS={Professional:"#2774AE",Identity:"#9B59B6","Affinity/Interest":"#E8920D",Institution:"#3DAA6D",Preliminary:"#8AA4B8"};
+const CAL_MONTHS=[{y:2026,m:6,l:"Jun 2026"},{y:2026,m:7,l:"Jul 2026"},{y:2026,m:8,l:"Aug 2026"},{y:2026,m:9,l:"Sep 2026"},{y:2026,m:10,l:"Oct 2026"},{y:2026,m:11,l:"Nov 2026"},{y:2026,m:12,l:"Dec 2026"},{y:2027,m:1,l:"Jan 2027"},{y:2027,m:2,l:"Feb 2027"},{y:2027,m:3,l:"Mar 2027"},{y:2027,m:4,l:"Apr 2027"},{y:2027,m:5,l:"May 2027"},{y:2027,m:6,l:"Jun 2027"},{y:2027,m:7,l:"Jul 2027"},{y:2027,m:8,l:"Aug 2027"}];
+const ACAD={"2026-07-27":"Onboarding Begins (Class of 2028)","2026-09-11":"Onboarding Ends","2026-09-17":"Fall Instruction Begins (1Y)","2026-09-24":"Fall Instruction Begins (2Y)","2026-09-30":"AMR Student Launch","2026-10-02":"BCC Student Launch","2026-10-07":"AMR Student Launch (cont.)","2026-10-26":"DOJ Week","2026-10-27":"DOJ Week","2026-10-28":"DOJ Week","2026-10-29":"DOJ Week","2026-10-30":"DOJ Week / AMR Company Launch","2026-11-11":"Veterans Day","2026-11-13":"Makeup Classes (Veterans Day)","2026-11-26":"Thanksgiving","2026-11-27":"Thanksgiving","2026-12-02":"AMR Mid-Point","2026-12-04":"BCC Mid-Point / Instruction Ends","2026-12-07":"Finals","2026-12-08":"Finals","2026-12-09":"Finals","2026-12-24":"Christmas","2026-12-25":"Christmas","2027-01-04":"Winter Instruction Begins","2027-01-09":"BCC Student Launch (W/S)","2027-01-18":"MLK Day","2027-01-22":"Makeup Classes (MLK Day)","2027-02-15":"Presidents Day","2027-02-17":"AMR Rehearsal I","2027-02-19":"BCC Rehearsal / Makeup Classes","2027-02-24":"AMR Rehearsal II","2027-03-05":"BCC & AMR Final Presentations","2027-03-12":"Winter Instruction Ends","2027-03-15":"Finals","2027-03-16":"Finals","2027-03-17":"Finals","2027-03-26":"César Chávez Day","2027-03-29":"Spring Instruction Begins","2027-05-21":"Makeup Classes (Memorial Day)","2027-05-29":"BCC Finals (W/S)","2027-05-31":"Memorial Day","2027-06-04":"Spring Instruction Ends","2027-06-07":"Finals","2027-06-08":"Finals","2027-06-09":"Finals","2027-06-10":"Finals","2027-06-11":"Commencement","2027-07-04":"Independence Day"};
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function pad2(n){return String(n).padStart(2,"0")}
+function getMonthDays(y,m){const f=new Date(y,m-1,1);const l=new Date(y,m,0);const cells=[];for(let i=0;i<f.getDay();i++)cells.push(null);for(let d=1;d<=l.getDate();d++)cells.push(d);return cells}
+
+const getFlags=(s)=>{
+  if(!s||!s.ci)return[{item:"No data submitted yet",p:"high"}];
+  const f=[];
+  if(!s.ci.presidentName)f.push({item:"Missing president info",p:"high"});
+  if(!s.ci.vpFinanceName)f.push({item:"Missing VP Finance info",p:"high"});
+  if(!s.boardConfirmed)f.push({item:"Board not confirmed",p:"high"});
+  if(!s.newGoals||!s.newGoals.some(g=>g.goal&&g.goal.trim()))f.push({item:"No 2026-27 goals entered",p:"high"});
+  if(!s.events||!s.events.some(e=>e.name&&e.name.trim()))f.push({item:"No events entered",p:"high"});
+  else{
+    const evs=s.events.filter(e=>e.name&&e.name.trim());
+    const ranks=evs.map(e=>e.rank).filter(Boolean);
+    if(!["1","2","3"].every(r=>ranks.includes(r)))f.push({item:"Top 3 events not ranked",p:"medium"});
+    const noDate=evs.filter(e=>!e.projectedDate);
+    if(noDate.length>0)f.push({item:`${noDate.length} event${noDate.length>1?"s":""} missing dates`,p:"medium"});
+    const vagueDate=evs.filter(e=>e.projectedDate&&!/^\d{4}-\d{2}-\d{2}$/.test(e.projectedDate));
+    if(vagueDate.length>0)f.push({item:`${vagueDate.length} event${vagueDate.length>1?"s have":""} vague date${vagueDate.length>1?"s":""} (need exact YYYY-MM-DD): ${vagueDate.slice(0,3).map(e=>'"'+e.name+'" → '+e.projectedDate).join(", ")}`,p:"high"});
+    // Academic calendar conflicts — any event landing on a date in ACAD (holidays, finals, DOJ Week, etc.)
+    // Vague-date events are already flagged above and can't be cross-referenced, so we only check ISO-format dates.
+    // All matches are flagged as "high" since most ACAD entries (holidays, finals, breaks) are hard conflicts;
+    // softer cases like "Fall Instruction Begins" still warrant Mallory's eye, and the label is inlined so she can judge.
+    const acadConflicts=evs.filter(e=>e.projectedDate&&/^\d{4}-\d{2}-\d{2}$/.test(e.projectedDate)&&ACAD[e.projectedDate]);
+    if(acadConflicts.length>0){
+      const sample=acadConflicts.slice(0,3).map(e=>'"'+e.name+'" on '+e.projectedDate+' ('+ACAD[e.projectedDate]+')').join("; ");
+      const more=acadConflicts.length>3?`; +${acadConflicts.length-3} more`:"";
+      const phrase=acadConflicts.length===1?"event has an academic calendar conflict":"events have academic calendar conflicts";
+      f.push({item:`${acadConflicts.length} ${phrase}: ${sample}${more}`,p:"high"});
+    }
+    const noBudget=evs.filter(e=>!e.forecastedBudget);
+    if(noBudget.length>0)f.push({item:`${noBudget.length} event${noBudget.length>1?"s":""} missing budgets`,p:"low"});
+    const noDesc=evs.filter(e=>!e.description||e.description.trim().length<10);
+    if(noDesc.length>3)f.push({item:`${noDesc.length} events lack descriptions — may need more detail`,p:"medium"});
+    const shortNames=evs.filter(e=>e.name.trim().length<5);
+    if(shortNames.length>0)f.push({item:`${shortNames.length} event name${shortNames.length>1?"s":""} appear incomplete`,p:"low"});
+    // High-budget events (≥$5K forecast) without a funding source selected — VP Ops needs to know how big-ticket events will be paid for
+    const highBudgetNoFund=evs.filter(e=>(parseInt(e.forecastedBudget)||0)>=5000&&(!e.fundingSource||!e.fundingSource.trim()));
+    if(highBudgetNoFund.length>0)f.push({item:`${highBudgetNoFund.length} high-budget event${highBudgetNoFund.length>1?"s":""} (≥$5K) missing funding source: ${highBudgetNoFund.slice(0,3).map(e=>'"'+e.name+'"').join(", ")}`,p:"medium"});
+  }
+  // Bylaws Liaison designation — required for every club per Mode A's "Liaison Designations (Required)" UI block
+  if(s.board&&Array.isArray(s.board)&&s.board.length>0&&!s.board.some(b=>b&&b.bylawsLiaison))f.push({item:"Bylaws Liaison not designated",p:"high"});
+  if(!s.rev||!(s.rev.lvo||s.rev.eventRevenue||s.rev.donations||s.rev.sponsorship))f.push({item:"No outside revenue entered",p:"high"});
+  if(!s.dues||!Array.isArray(s.dues)||!s.dues.some(d=>d.fee&&d.count))f.push({item:"Dues structure not filled",p:"high"});
+  if(!s.mem){f.push({item:"No membership data",p:"high"})}else{
+    const tot=Object.values(s.mem).reduce((sum,v)=>sum+(parseInt(v)||0),0);
+    if(tot===0)f.push({item:"Membership count is zero",p:"high"});
+  }
+  if(!s.parkerLiaison){const ct=s.ci?.type||"";if(ct==="Professional")f.push({item:"No Parker liaison assigned (required for professional clubs)",p:"high"});}
+  if(!s.ie||!s.ie.trim())f.push({item:"IE response missing",p:"medium"});
+  if(!s.hasExtBank)f.push({item:"Account verification not answered",p:"medium"});
+  if(s.newGoals){
+    const vague=s.newGoals.filter(g=>g.goal&&g.goal.trim()&&g.goal.trim().length<15);
+    if(vague.length>0)f.push({item:`${vague.length} goal${vague.length>1?"s":""} may be too vague`,p:"low"});
+    const noMetrics=s.newGoals.filter(g=>g.goal&&g.goal.trim()&&(!g.metrics||!g.metrics.trim()));
+    if(noMetrics.length>0)f.push({item:`${noMetrics.length} goal${noMetrics.length>1?"s":""} missing success metrics`,p:"medium"});
+  }
+  return f;
+};
+
+const getPct=(s,clubName)=>{
+  if(!s||!s.ci)return 0;
+  const type=s.ci.type||CLUB_TYPES[clubName||""]||"";
+  const isPro=type==="Professional";
+  let done=0,total=isPro?12:11;
+  // 1. Club name & type
+  if(s.ci.name&&s.ci.type)done++;
+  // 2. President
+  if(s.ci.presidentName)done++;
+  // 3. Financial info (VP Finance + bank balance)
+  if(s.ci.vpFinanceName&&s.ci.bankBalance)done++;
+  // 4. Board confirmed
+  if(s.boardConfirmed)done++;
+  // 5. Goals & IE
+  if(s.newGoals&&s.newGoals.some(g=>g.goal&&g.goal.trim())&&s.ie&&s.ie.trim())done++;
+  // 6. Club Membership
+  if(s.mem){const tot=Object.values(s.mem).reduce((sum,v)=>sum+(parseInt(v)||0),0);if(tot>0)done++}
+  // 7. Expected Dues Revenue
+  if(s.dues&&Array.isArray(s.dues)&&s.dues.some(d=>d.fee&&d.count))done++;
+  // 8. Outside Revenue
+  if(s.rev&&(s.rev.lvo||s.rev.eventRevenue||s.rev.donations||s.rev.sponsorship||s.rev.additional))done++;
+  // 9. Account Verification
+  if(s.hasExtBank)done++;
+  // 10. Events entered
+  if(s.events&&s.events.some(e=>e.name&&e.name.trim()))done++;
+  // 11. Top 3 ranked
+  if(s.events){const r=s.events.map(e=>e.rank).filter(Boolean);if(["1","2","3"].every(x=>r.includes(x)))done++}
+  // 12. Parker liaison (required for Professional only)
+  if(isPro){if(s.parkerLiaison)done++}
+  return Math.round(done/total*100);
+};
+
+// CC every outbound email to Mallory's UCLA Outlook
+const CC_ADDR="mallory.leeper.2027@anderson.ucla.edu";
+
+// Build the To-line, accommodating co-presidents (e2)
+const buildTo=pres=>{if(!pres)return"";return pres.e2?pres.e+", "+pres.e2:pres.e||""};
+
+// Build the greeting, handling co-presidents gracefully
+const buildGreeting=pres=>{
+  if(!pres)return"there";
+  if(pres.n&&pres.n.includes("&")){
+    const names=pres.n.split(" & ").map(n=>n.trim().split(" ")[0]);
+    return names.length===2?names[0]+" and "+names[1]:names.slice(0,-1).join(", ")+", and "+names[names.length-1];
+  }
+  return pres.n.split(" ")[0];
+};
+
+// Next-steps closing used across the approved template & standalone reference
+const NEXT_STEPS_BLOCK=`**1. Final revisions due Friday, May 8 at 5:00 PM**
+If you need to make any edits, head back into Mode A:
+Link: https://anderson-ops-copilot.github.io/operations-copilot/
+Access Code: Anderson_ASA_Operations
+
+**2. When you finish revising, click "Submit for Review" in Mode A — don't email me**
+At the bottom of the Export step there's now a "Submit for Review" button. Clicking it flags your plan in my reviewer dashboard automatically, so I'll know you're ready for another look. Please use this instead of emailing — it saves us both back-and-forth and I'll get to your revisions faster.
+
+**3. Calendar approvals finalized by May 13 — review every event date carefully**
+Between May 8 and May 13 I'll be finalizing approvals across all clubs. Once that's done on May 13, your events will be pushed to a shared Google calendar that becomes the universal source of truth for ASA scheduling — especially for anything on campus coordinated with Building Services. Please double-check every event date in Mode A before the May 8 revision deadline. If a date is wrong here, it will be wrong everywhere downstream.
+
+**4. 5/19 Calendar Session — attendance required**
+You (or a designated board member empowered to make scheduling decisions on behalf of the club) must attend the Calendar Session on Tuesday, May 19. This is where we finalize rooms, resolve conflicts, and lock in the year.`;
+
+// Tab-aware feedback grouping — mirrors Mode A's wizard tabs (📋 Club Info, 👥 Board, 🎯 Goals, 💰 Revenue, 📅 Events, 🤝 Parker)
+// so that the email Mallory sends visually maps back to where the club president needs to make changes.
+const TAB_INFO={ci:{e:"📋",l:"Club Info"},board:{e:"👥",l:"Board"},goals:{e:"🎯",l:"Goals"},rev:{e:"💰",l:"Revenue"},events:{e:"📅",l:"Events"},parker:{e:"🤝",l:"Parker"},other:{e:"📌",l:"Other"}};
+const TAB_ORDER=["ci","board","goals","rev","events","parker","other"];
+const flagToTab=(it)=>{
+  const t=(it||"").toLowerCase();
+  if(t.includes("no data submitted"))return"ci";
+  if(t.includes("parker"))return"parker";
+  if(t.includes("event")||t.includes("top 3"))return"events";
+  if(t.includes("dues")||t.includes("membership")||t.includes("revenue")||t.includes("account verif"))return"rev";
+  if(t.includes("goal")||t.includes("ie response"))return"goals";
+  if(t.includes("bylaws")||t.includes("board"))return"board";
+  if(t.includes("president")||t.includes("vp finance")||t.includes("club info"))return"ci";
+  return"other";
+};
+
+// Snapshot of submitted data for the 📋 review header — board count, members, events, IE/Cross-Club/Sustainability tags, Top 3.
+// Returns "" if state is null or has no meaningful data so the email gracefully falls back to flag-only feedback.
+const buildSnapshot=(state)=>{
+  if(!state)return"";
+  const lines=[];
+  if(state.board&&Array.isArray(state.board)){
+    const bc=state.board.filter(b=>b&&b.name&&b.name.trim()).length;
+    if(bc>0)lines.push(`${bc} board member${bc===1?"":"s"}`);
+  }
+  if(state.mem){
+    const tot=Object.values(state.mem).reduce((s,v)=>s+(parseInt(v)||0),0);
+    if(tot>0)lines.push(`${tot} member${tot===1?"":"s"}`);
+  }
+  let topLine="";
+  if(state.events&&Array.isArray(state.events)){
+    const evs=state.events.filter(e=>e&&e.name&&e.name.trim());
+    if(evs.length>0){
+      const ie=evs.filter(e=>e.includesIE).length;
+      const cc=evs.filter(e=>e.isCrossClub).length;
+      const sus=evs.filter(e=>e.includesSustainability).length;
+      let evLine=`${evs.length} event${evs.length===1?"":"s"}`;
+      const tags=[];
+      if(ie>0)tags.push(`${ie} IE`);
+      if(cc>0)tags.push(`${cc} Cross-Club`);
+      if(sus>0)tags.push(`${sus} Sustainability`);
+      if(tags.length>0)evLine+=` (${tags.join(" / ")})`;
+      lines.push(evLine);
+      const top=evs.filter(e=>e.rank).sort((a,b)=>parseInt(a.rank)-parseInt(b.rank));
+      if(top.length===3)topLine=`Top 3: ${top.map(e=>"#"+e.rank+" "+e.name).join(", ")}`;
+    }
+  }
+  if(lines.length===0&&!topLine)return"";
+  let out="📊 **Plan snapshot**\n";
+  if(lines.length>0)out+=lines.join(" • ")+"\n";
+  if(topLine)out+=topLine+"\n";
+  return out+"\n";
+};
+
+const genEmail=(name,flags,state,template)=>{
+  const pres=PRES[name];
+  const to=buildTo(pres);
+  const first=buildGreeting(pres);
+  const pct=getPct(state,name);
+  const high=flags.filter(f=>f.p==="high");
+  const med=flags.filter(f=>f.p==="medium");
+  
+  if(template==="not_started")return{
+    to,cc:CC_ADDR,
+    subject:`Friendly Reminder: ${name} Operating Plan — Let's Get Started!`,
+    body:`Hi ${first},\n\nI hope you're doing well! I wanted to check in — it looks like your club's 2026-2027 operating plan hasn't been started yet in the Copilot. I know things get busy, but I'd love to help make this as smooth as possible for you.\n\nThe tool is designed to save you time — your prior year events and goals are already pre-loaded, so you're not starting from scratch. Most clubs find they can get through the basics in about 30-45 minutes.\n\nHere's your link: https://anderson-ops-copilot.github.io/operations-copilot/\nAccess Code: Anderson_ASA_Operations\n\nDeadlines:\n• 1st Round: April 24\n• 2nd Round: May 1\n\nOffice hours are available April 21 & 28 (11:30am-1pm) if you'd like to walk through it together. Don't hesitate to reach out if you have any questions!\n\nBest,\nMallory`
+  };
+  
+  if(template==="halfway")return{
+    to,cc:CC_ADDR,
+    subject:`Great Progress on ${name}'s Operating Plan! A Few Items Left`,
+    body:`Hi ${first},\n\nGreat work so far on your operating plan — you're at ${pct}% completion! Just wanted to flag a few remaining items so you can wrap things up:\n\n${high.length>0?"Still needed:\n"+high.map(f=>"• "+f.item).join("\n")+"\n\n":""}${med.length>0?"Would strengthen your plan:\n"+med.map(f=>"• "+f.item).join("\n")+"\n\n":""}You're in great shape — just a few more things and you'll be all set. Let me know if you need any help!\n\nDeadlines: April 24 (1st round) or May 1 (2nd round)\n\nBest,\nMallory`
+  };
+  
+  if(template==="deadline_reminder")return{
+    to,cc:CC_ADDR,
+    subject:`Reminder: Operating Plan Deadline in 1 Week — ${name}`,
+    body:`Hi ${first},\n\nJust a friendly heads-up that the operating plan deadline is one week away! Your plan is currently at ${pct}% completion.\n\n${pct<100?"Here's what still needs attention:\n"+flags.filter(f=>f.p==="high").map(f=>"• "+f.item).join("\n")+"\n\n":"You're at 100% — amazing work! Just make sure to export and upload to Box if you haven't already.\n\n"}Link: https://anderson-ops-copilot.github.io/operations-copilot/\n\nOffice hours this week: April 21 or April 28, 11:30am-1pm. Happy to help with anything!\n\nBest,\nMallory`
+  };
+  
+  if(template==="office_hours")return{
+    to,cc:CC_ADDR,
+    subject:`Office Hours This Week — Operating Plan Support`,
+    body:`Hi ${first},\n\nQuick reminder that operating plan office hours are available this week:\n\n📅 April 21 & April 28\n🕦 11:30am - 1:00pm\n\nWhether you have questions about the Copilot tool, need help with specific sections, or want a quick review of your plan before submitting — I'm here to help.\n\nYour plan is currently at ${pct}% completion. ${pct<50?"Let's get it across the finish line together!":"Looking good — let's make sure everything is polished!"}\n\nBest,\nMallory`
+  };
+
+  if(template==="approved")return{
+    to,cc:CC_ADDR,
+    subject:`✅ ${name} Operating Plan Approved — Next Steps`,
+    body:`Hi ${first},\n\nGreat news — your 2026-2027 operating plan is approved! 🎉 Thank you for the thorough work you and your board put into this. Here's what happens next:\n\n${NEXT_STEPS_BLOCK}\n\nThat's it. Once the calendar is locked on May 13, you'll have a clean baseline to launch the year from. Reach out any time with questions.\n\nBest,\nMallory\nVP of Operations, ASA`
+  };
+
+  // Default: custom review feedback (tab-grouped + snapshot)
+  // Snapshot at top (📊) gives Mallory's at-a-glance data review.
+  // Every wizard tab (📋 👥 🎯 💰 📅) renders unconditionally so the email mirrors
+  // Mode A's structure even when a section is clean — empty sections show "✓ Looks great"
+  // so club presidents can quickly see what they nailed. 🤝 Parker only renders for
+  // Professional clubs (other club types don't need a Parker plan). Low-priority items
+  // go in a separate ✨ Optional touches block. The "Other" tab is a catch-all and only
+  // renders if it has flags (no point reassuring about a non-existent section).
+  const snapshot=buildSnapshot(state);
+  const low=flags.filter(f=>f.p==="low");
+  const tabFlags=[...high,...med];
+  const grouped={};
+  for(const f of tabFlags){const tk=flagToTab(f.item);if(!grouped[tk])grouped[tk]=[];grouped[tk].push(f);}
+  const clubType=(state&&state.ci&&state.ci.type)||CLUB_TYPES[name]||"";
+  const alwaysShown=clubType==="Professional"?["ci","board","goals","rev","events","parker"]:["ci","board","goals","rev","events"];
+  // Edge case: if state is empty and the only flag is "No data submitted yet", skip the always-show
+  // structure (showing "Looks great!" for Board/Goals/etc. when they haven't started would be misleading).
+  const isNoDataCase=flags.length===1&&flags[0].item==="No data submitted yet";
+  let feedbackBlock="";
+  if(isNoDataCase){
+    feedbackBlock=`📋 **Club Info**\n• ${flags[0].item}\n\n`;
+  }else{
+    for(const tk of alwaysShown){
+      const info=TAB_INFO[tk];
+      feedbackBlock+=`${info.e} **${info.l}**\n`;
+      if(grouped[tk]&&grouped[tk].length>0){
+        feedbackBlock+=grouped[tk].map(f=>"• "+f.item).join("\n")+"\n\n";
+      }else{
+        feedbackBlock+=`✓ Looks great — no items flagged\n\n`;
+      }
+    }
+    if(grouped.other&&grouped.other.length>0){
+      const info=TAB_INFO.other;
+      feedbackBlock+=`${info.e} **${info.l}**\n`+grouped.other.map(f=>"• "+f.item).join("\n")+"\n\n";
+    }
+  }
+  const optionalBlock=low.length>0?`✨ **Optional touches**\n`+low.map(f=>"• "+f.item).join("\n")+"\n\n":"";
+  const hasIssues=tabFlags.length>0||low.length>0||isNoDataCase;
+  const feedbackIntro=hasIssues
+    ?"Here's the section-by-section breakdown:\n\n"
+    :"Everything looks great across the board — nothing flagged from my end!\n\n";
+  return{
+    to,cc:CC_ADDR,
+    subject:`Operating Plan Review — ${name}`,
+    body:`Hi ${first},\n\nThank you for working on your 2026-2027 operating plan! I've had a chance to review what you've submitted${pct<100?` (${pct}% complete)`:""} and wanted to share some feedback.\n\n${snapshot}${feedbackIntro}${feedbackBlock}${optionalBlock}When you've made these updates, please click **"Submit for Review"** at the bottom of the Export step in Mode A — that flags your plan for re-review in my dashboard automatically, so you don't need to email me. I'll get back to you quickly.\n\nIf any of these items are unclear or you'd like to talk through them, I'm always happy to hop on a quick call or chat during office hours (April 21 & 28, 11:30am-1pm).\n\nTimeline reminder:\n• Revisions due: Friday, May 8 at 5:00 PM\n• Calendar approvals finalized: May 13 (events push to shared Google calendar)\n• Calendar Session: May 19 (attendance required — you or a designated scheduling decision-maker)\n\nKeep up the great work!\n\nBest,\nMallory\nVP of Operations, ASA`
+  };
+};
+
+// Feedback log (localStorage) — tracks when Mallory sent feedback to each club,
+// what template, and what the completion % was at the moment of sending. Used
+// to detect "revised since feedback" in the overview/detail UI.
+const FB_KEY="asa_feedback_log_v1";
+const loadFbLog=()=>{try{return JSON.parse(localStorage.getItem(FB_KEY)||"{}")}catch(e){return{}}};
+const saveFbLog=log=>{try{localStorage.setItem(FB_KEY,JSON.stringify(log))}catch(e){}};
+const logFeedbackSent=(club,template,pctAtSend)=>{
+  const log=loadFbLog();
+  if(!log[club])log[club]=[];
+  log[club].push({t:Date.now(),template,pct:pctAtSend||0});
+  // Keep last 20 per club
+  if(log[club].length>20)log[club]=log[club].slice(-20);
+  saveFbLog(log);
+  return log;
+};
+const getLastFb=(club,log)=>{const arr=(log||loadFbLog())[club];return arr&&arr.length?arr[arr.length-1]:null};
+// Most recent REVIEW-type feedback (not nudges/reminders). A reminder nudge followed by a
+// submission should still be classified as a "new submission" — because Mallory hasn't
+// actually reviewed anything yet. Only "review" and "approved" templates count as review feedback.
+const REVIEW_TEMPLATES=new Set(["review","approved"]);
+const getLastReviewFb=(club,log)=>{
+  const arr=(log||loadFbLog())[club];
+  if(!arr)return null;
+  for(let i=arr.length-1;i>=0;i--)if(REVIEW_TEMPLATES.has(arr[i].template))return arr[i];
+  return null;
+};
+const daysSince=ts=>Math.floor((Date.now()-ts)/(1000*60*60*24));
+const fmtDaysAgo=ts=>{const d=daysSince(ts);if(d===0)return"today";if(d===1)return"yesterday";return d+" days ago"};
+
+// Unified status badge — combines Tier 3 explicit submit signal + Tier 2 implicit save signal
+// + Mode B's local feedback log. Priority (highest wins):
+//   🔔 resubmitted:    club clicked Submit after Mallory gave REVIEW feedback — HIGHEST
+//                      (reminders/nudges don't count; only "review" and "approved" templates do)
+//   🆕 new_submission: first-ever submission OR submission after only reminders (never reviewed)
+//   ✎ edited:          club saved but didn't explicitly resubmit since last communication
+//   ⏳ awaiting:       feedback sent, no activity since
+//   — none:            no feedback, no submit
+// lastFb = most recent communication of any kind (for "awaiting" timing)
+// lastReviewFb = most recent REVIEW-type feedback only (for new-vs-resubmit distinction)
+const computeFbBadge=(lastFb,lastReviewFb,submittedAt,lastSavedAt,currentPct)=>{
+  const fbTs=lastFb?lastFb.t:0;
+  const reviewTs=lastReviewFb?lastReviewFb.t:0;
+  if(submittedAt&&submittedAt>fbTs){
+    if(!reviewTs){
+      // Never had actual review feedback before — this is a new/first submission
+      return{key:"new_submission",txt:"🆕 new — submitted "+fmtDaysAgo(submittedAt),bg:"rgba(39,116,174,0.22)",col:"#5DADE2",weight:4};
+    }
+    // Submission came after real review feedback — they're responding to your notes
+    return{key:"resubmitted",txt:"🔔 resubmitted "+fmtDaysAgo(submittedAt),bg:"rgba(217,79,79,0.22)",col:"#FF6B6B",weight:5};
+  }
+  if(lastSavedAt&&lastSavedAt>fbTs+60000){
+    return{key:"edited",txt:"✎ edited "+fmtDaysAgo(lastSavedAt),bg:"rgba(61,170,109,0.15)",col:"#3DAA6D",weight:3};
+  }
+  if(lastFb&&currentPct>lastFb.pct){
+    return{key:"revised_pct",txt:"✓ revised "+fmtDaysAgo(fbTs),bg:"rgba(61,170,109,0.15)",col:"#3DAA6D",weight:3};
+  }
+  if(lastFb){
+    return{key:"awaiting",txt:"⏳ "+fmtDaysAgo(fbTs),bg:"rgba(255,209,0,0.12)",col:"#FFD100",weight:2};
+  }
+  return{key:"none",txt:"—",bg:"transparent",col:"#8AA4B8",weight:0};
+};
+
+function App(){
+  const[clubs,setClubs]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[error,setError]=useState("");
+  const[selected,setSelected]=useState(null);
+  const[detail,setDetail]=useState(null);
+  const[loadingDetail,setLoadingDetail]=useState(false);
+  const[view,setView]=useState("overview");
+  const[emailDraft,setEmailDraft]=useState(null);
+  const[statusFilter,setStatusFilter]=useState("All");
+  const[typeFilter,setTypeFilter]=useState("All");
+  const[sortBy,setSortBy]=useState("feedback");
+  const[batchTemplate,setBatchTemplate]=useState("");
+  const[batchEmails,setBatchEmails]=useState([]);
+  const[calEvents,setCalEvents]=useState([]);
+  const[calLoading,setCalLoading]=useState(false);
+  const[calMonth,setCalMonth]=useState(3); // index into MONTHS array, start at Sep 2026
+  const[fbLog,setFbLog]=useState(()=>loadFbLog());
+  // Tier 2 + Tier 3: per-club submission/save timestamps, lazily loaded in background
+  const[submissionMap,setSubmissionMap]=useState({});
+  const[subLoading,setSubLoading]=useState(false);
+  const[subProgress,setSubProgress]=useState({done:0,total:0});
+
+  // Progressive loader — fetches each club's full state to extract submittedAt/lastSavedAt
+  // Runs in batches of 5 with a tiny delay so we don't hammer Apps Script.
+  const loadSubmissions=useCallback(async(clubList)=>{
+    if(!clubList||clubList.length===0)return;
+    setSubLoading(true);
+    setSubProgress({done:0,total:clubList.length});
+    const BATCH=5;
+    const map={};
+    for(let i=0;i<clubList.length;i+=BATCH){
+      const batch=clubList.slice(i,i+BATCH);
+      const results=await Promise.all(batch.map(async name=>{
+        try{
+          const r=await fetch(API+"?action=load&clubName="+encodeURIComponent(name),{redirect:"follow"});
+          const d=await r.json();
+          const s=d.state||{};
+          return{name,submittedAt:s.submittedAt||null,lastSavedAt:s.lastSavedAt||null};
+        }catch(e){return{name,submittedAt:null,lastSavedAt:null}}
+      }));
+      for(const r of results)map[r.name]={submittedAt:r.submittedAt,lastSavedAt:r.lastSavedAt};
+      setSubmissionMap(prev=>({...prev,...map}));
+      setSubProgress({done:Math.min(i+BATCH,clubList.length),total:clubList.length});
+      // Small delay between batches
+      if(i+BATCH<clubList.length)await new Promise(res=>setTimeout(res,200));
+    }
+    setSubLoading(false);
+  },[]);
+
+  useEffect(()=>{
+    fetch(API+"?action=status",{redirect:"follow"})
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.statuses){
+          const filtered=d.statuses.filter(c=>!SKIP.some(s=>c.club.includes(s))).map(c=>({...c,type:c.type||CLUB_TYPES[c.club]||""}));
+          setClubs(filtered);
+          // Kick off background load of submission timestamps
+          loadSubmissions(filtered.map(c=>c.club));
+        }
+        setLoading(false);
+      })
+      .catch(e=>{setError("Could not connect to Google Sheets. This preview works on the live GitHub Pages site.");setLoading(false)});
+  },[loadSubmissions]);
+
+  const loadClub=async(name)=>{
+    setSelected(name);setLoadingDetail(true);setView("detail");setEmailDraft(null);
+    try{
+      const r=await fetch(API+"?action=load&clubName="+encodeURIComponent(name),{redirect:"follow"});
+      const d=await r.json();
+      setDetail(d.state||null);
+    }catch(e){setDetail(null)}
+    setLoadingDetail(false);
+  };
+
+  const getStatus=(pct)=>pct===100?"Complete":pct>=50?"In Progress":pct>0?"Started":"Not Started";
+  const getStatusColor=(pct)=>pct===100?CO.gn:pct>=50?CO.or:pct>0?CO.or:CO.rd;
+
+  const filtered=clubs.filter(c=>{
+    if(statusFilter!=="All"){
+      const s=getStatus(c.completion);
+      const last=getLastFb(c.club,fbLog);
+      const lastReview=getLastReviewFb(c.club,fbLog);
+      const sub=submissionMap[c.club]||{};
+      const badge=computeFbBadge(last,lastReview,sub.submittedAt,sub.lastSavedAt,c.completion);
+      if(statusFilter==="Resubmitted")return badge.key==="resubmitted";
+      if(statusFilter==="New Submissions")return badge.key==="new_submission";
+      if(statusFilter==="Edited Since Feedback")return badge.key==="edited"||badge.key==="revised_pct";
+      if(statusFilter==="Awaiting")return badge.key==="awaiting";
+      if(statusFilter==="Complete"&&s!=="Complete")return false;
+      if(statusFilter==="In Progress"&&s!=="In Progress"&&s!=="Started")return false;
+      if(statusFilter==="Not Started"&&s!=="Not Started")return false;
+    }
+    if(typeFilter!=="All"&&c.type!==typeFilter)return false;
+    return true;
+  });
+
+  const sorted=[...filtered].sort((a,b)=>{
+    if(sortBy==="pct_desc")return b.completion-a.completion||a.club.localeCompare(b.club);
+    if(sortBy==="pct_asc")return a.completion-b.completion||a.club.localeCompare(b.club);
+    if(sortBy==="alpha")return a.club.localeCompare(b.club);
+    if(sortBy==="type")return(a.type||"").localeCompare(b.type||"")||a.club.localeCompare(b.club);
+    if(sortBy==="flags")return(b.flags||0)-(a.flags||0)||a.club.localeCompare(b.club);
+    if(sortBy==="feedback"){
+      // Sort by badge priority: ready_review > edited > awaiting > others
+      const aW=computeFbBadge(getLastFb(a.club,fbLog),getLastReviewFb(a.club,fbLog),(submissionMap[a.club]||{}).submittedAt,(submissionMap[a.club]||{}).lastSavedAt,a.completion).weight;
+      const bW=computeFbBadge(getLastFb(b.club,fbLog),getLastReviewFb(b.club,fbLog),(submissionMap[b.club]||{}).submittedAt,(submissionMap[b.club]||{}).lastSavedAt,b.completion).weight;
+      return bW-aW||a.club.localeCompare(b.club);
+    }
+    return 0;
+  });
+
+  const complete=clubs.filter(c=>c.completion===100).length;
+  const inProgress=clubs.filter(c=>c.completion>0&&c.completion<100).length;
+  const notStarted=clubs.filter(c=>c.completion===0).length;
+  // Submission-workflow buckets
+  const bucketCounts=clubs.reduce((acc,c)=>{
+    const last=getLastFb(c.club,fbLog);
+    const lastReview=getLastReviewFb(c.club,fbLog);
+    const sub=submissionMap[c.club]||{};
+    const k=computeFbBadge(last,lastReview,sub.submittedAt,sub.lastSavedAt,c.completion).key;
+    acc[k]=(acc[k]||0)+1;return acc;
+  },{});
+  const readyForReview=bucketCounts.resubmitted||0;
+  const newSubmissions=bucketCounts.new_submission||0;
+  const editedSinceFeedback=(bucketCounts.edited||0)+(bucketCounts.revised_pct||0);
+  const awaiting=bucketCounts.awaiting||0;
+
+  const hdr={padding:"8px 12px",fontSize:11,fontWeight:700,color:CO.mu,textAlign:"left",borderBottom:`1px solid ${CO.cr}`,whiteSpace:"nowrap",cursor:"pointer"};
+  const td={padding:"8px 12px",fontSize:13,borderBottom:`1px solid ${CO.cr}`};
+  const pill={padding:"3px 10px",borderRadius:12,fontSize:11,fontWeight:600,display:"inline-block"};
+  const btn=(active)=>({padding:"8px 16px",borderRadius:8,border:"none",fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:"inherit",background:active?"rgba(255,209,0,0.2)":"rgba(255,255,255,0.06)",color:active?CO.gd:CO.mu});
+  const flagBadge=(p)=>({fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:700,background:p==="high"?"rgba(217,79,79,0.15)":p==="medium"?"rgba(232,146,13,0.15)":"rgba(138,164,184,0.15)",color:p==="high"?CO.rd:p==="medium"?CO.or:CO.mu});
+
+  const renderOverview=()=>(
+    <div>
+      {/* Submission-workflow row — highest priority signals */}
+      <div style={{display:"flex",gap:12,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
+        {[
+          {l:"🔔 Resubmitted (after feedback)",v:readyForReview,c:"#FF6B6B",f:"Resubmitted",tip:"Clubs that submitted AFTER you sent them feedback — they're responding to your notes. Highest priority because you owe them a response."},
+          {l:"🆕 New Submissions (never reviewed)",v:newSubmissions,c:"#5DADE2",f:"New Submissions",tip:"Clubs submitting for the very first time — no prior review history. Give these a first look."},
+          {l:"✎ Edited (not submitted)",v:editedSinceFeedback,c:CO.gn,f:"Edited Since Feedback",tip:"Clubs that saved changes after your feedback but didn't formally resubmit. Nudge them to click Submit for Review."},
+          {l:"⏳ Awaiting",v:awaiting,c:CO.gd,f:"Awaiting",tip:"Feedback sent, no activity from the club since. Follow up if it's been a while."},
+        ].map((s,i)=>
+          <div key={i} onClick={()=>setStatusFilter(s.f)} title={s.tip} style={{background:statusFilter===s.f?"rgba(255,209,0,0.08)":"rgba(255,255,255,0.04)",borderRadius:12,padding:"12px 18px",flex:"1 1 180px",textAlign:"center",borderLeft:`4px solid ${s.c}`,cursor:"pointer",border:statusFilter===s.f?`1px solid ${CO.gd}`:`1px solid ${CO.cr}`}}>
+            <div style={{fontSize:22,fontWeight:800,color:s.c}}>{s.v}</div>
+            <div style={{fontSize:11,color:CO.mu,marginTop:2}}>{s.l}</div>
+          </div>
+        )}
+        {subLoading&&<div style={{flex:"0 0 auto",padding:"10px 14px",fontSize:11,color:CO.mu,alignSelf:"center",background:"rgba(255,255,255,0.04)",borderRadius:8}}>
+          Loading submissions… <strong style={{color:CO.gd}}>{subProgress.done}/{subProgress.total}</strong>
+        </div>}
+      </div>
+
+      {/* Completion status row */}
+      <div style={{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}}>
+        {[{l:"All",v:clubs.length,c:CO.bl,f:"All"},{l:"Complete",v:complete,c:CO.gn,f:"Complete"},{l:"In Progress",v:inProgress,c:CO.or,f:"In Progress"},{l:"Not Started",v:notStarted,c:CO.rd,f:"Not Started"}].map((s,i)=>
+          <div key={i} onClick={()=>setStatusFilter(s.f)} style={{background:statusFilter===s.f?"rgba(255,209,0,0.08)":"rgba(255,255,255,0.04)",borderRadius:12,padding:"14px 20px",flex:"1 1 130px",textAlign:"center",borderLeft:`4px solid ${s.c}`,cursor:"pointer",border:statusFilter===s.f?`1px solid ${CO.gd}`:`1px solid ${CO.cr}`}}>
+            <div style={{fontSize:26,fontWeight:800,color:s.c}}>{s.v}</div>
+            <div style={{fontSize:11,color:CO.mu,marginTop:2}}>{s.l}</div>
+          </div>
+        )}
+      </div>
+
+      <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <span style={{fontSize:12,color:CO.mu,marginRight:4}}>Type:</span>
+        {TYPES.map(t=><button key={t} onClick={()=>setTypeFilter(t)} style={btn(typeFilter===t)}>{t}</button>)}
+        <span style={{fontSize:12,color:CO.mu,marginLeft:12,marginRight:4}}>Sort:</span>
+        <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{padding:"6px 10px",borderRadius:6,border:`1px solid ${CO.cr}`,background:"rgba(255,255,255,0.06)",color:CO.lt,fontSize:12,cursor:"pointer"}}>
+          <option value="feedback">Feedback urgency (🔔 first)</option>
+          <option value="pct_desc">% Complete (high→low)</option>
+          <option value="pct_asc">% Complete (low→high)</option>
+          <option value="alpha">A → Z</option>
+          <option value="type">Club Type</option>
+        </select>
+      </div>
+
+      <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <span style={{fontSize:12,color:CO.mu,marginRight:4}}>Batch Email:</span>
+        {[{l:"Not Started Reminder",t:"not_started"},{l:"Halfway There",t:"halfway"},{l:"Deadline (1 Week)",t:"deadline_reminder"},{l:"Office Hours",t:"office_hours"},{l:"✅ Approved / Next Steps",t:"approved"}].map(m=>
+          <button key={m.t} onClick={()=>{
+            const recipients=sorted.filter(c=>PRES[c.club]).map(c=>{
+              const email=genEmail(c.club,[],null,m.t);
+              return{club:c.club,to:email.to,cc:email.cc,subject:email.subject,body:email.body};
+            });
+            setBatchEmails(recipients);setBatchTemplate(m.t);setView("batch");
+          }} style={{padding:"6px 14px",borderRadius:8,border:"none",fontWeight:600,fontSize:11,cursor:"pointer",fontFamily:"inherit",background:m.t==="approved"?"rgba(61,170,109,0.18)":"rgba(39,116,174,0.15)",color:m.t==="approved"?CO.gn:CO.bl}}>
+            {m.l} ({sorted.filter(c=>PRES[c.club]).length})
+          </button>
+        )}
+      </div>
+
+      <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,overflow:"hidden",border:`1px solid ${CO.cr}`}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr>
+            {[{l:"Club",s:"alpha"},{l:"Type",s:"type"},{l:"%",s:"pct_desc"},{l:"Status",s:"pct_desc"},{l:"President",s:"alpha"},{l:"Events",s:"pct_desc"},{l:"Top 3",s:"pct_desc"},{l:"Feedback",s:"alpha"}].map((h,i)=>
+              <th key={i} style={hdr} onClick={()=>setSortBy(h.s)}>{h.l}</th>
+            )}
+          </tr></thead>
+          <tbody>
+            {sorted.map((c,i)=>{
+              const pct=c.completion;const sc=getStatusColor(pct);const pres=PRES[c.club];
+              const last=getLastFb(c.club,fbLog);
+              const lastReview=getLastReviewFb(c.club,fbLog);
+              const sub=submissionMap[c.club]||{};
+              const fbBadge=computeFbBadge(last,lastReview,sub.submittedAt,sub.lastSavedAt,pct);
+              return(
+                <tr key={i} onClick={()=>loadClub(c.club)} style={{cursor:"pointer",background:i%2===0?"rgba(255,255,255,0.02)":"transparent",transition:"background 0.1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(255,209,0,0.04)"}
+                  onMouseLeave={e=>e.currentTarget.style.background=i%2===0?"rgba(255,255,255,0.02)":"transparent"}>
+                  <td style={{...td,fontWeight:600,color:CO.wh,maxWidth:260}}>{c.club}{pres&&pres.e2&&<span style={{fontSize:9,background:"rgba(39,116,174,0.2)",color:CO.bl,padding:"1px 5px",borderRadius:3,marginLeft:6,fontWeight:600}}>co-pres</span>}</td>
+                  <td style={{...td,fontSize:11,color:CO.mu}}>{c.type||""}</td>
+                  <td style={{...td,fontWeight:700,color:sc}}>{pct}%</td>
+                  <td style={td}><span style={{...pill,background:pct===100?"rgba(61,170,109,0.15)":pct>0?"rgba(232,146,13,0.15)":"rgba(217,79,79,0.15)",color:sc}}>{getStatus(pct)}</span></td>
+                  <td style={{...td,fontSize:12}}>{pres?pres.n:"—"}</td>
+                  <td style={{...td,fontSize:12}}>{c.events||"—"}</td>
+                  <td style={{...td,fontSize:12,color:c.top3?CO.gn:CO.rd}}>{c.top3?"✓":"✗"}</td>
+                  <td style={{...td,fontSize:11}}><span style={{background:fbBadge.bg,color:fbBadge.col,padding:"2px 8px",borderRadius:4,fontWeight:600,whiteSpace:"nowrap"}}>{fbBadge.txt}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {sorted.length===0&&<div style={{padding:40,textAlign:"center",color:CO.mu}}>No clubs match this filter.</div>}
+      </div>
+    </div>
+  );
+
+  const renderBatch=()=>(
+    <div>
+      <button onClick={()=>{setView("overview");setBatchEmails([]);setBatchTemplate("")}} style={{padding:"8px 16px",borderRadius:8,border:"none",background:"rgba(255,255,255,0.08)",color:CO.mu,cursor:"pointer",fontWeight:600,marginBottom:20}}>← Back</button>
+      <h2 style={{margin:"0 0 4px",color:CO.wh,fontSize:18}}>Batch Email: {batchTemplate.replace(/_/g," ").replace(/\b\w/g,l=>l.toUpperCase())}</h2>
+      <p style={{color:CO.mu,fontSize:13,marginBottom:8}}>{batchEmails.length} recipient club{batchEmails.length===1?"":"s"} from current filter ({statusFilter} / {typeFilter})</p>
+      <p style={{color:CO.gd,fontSize:12,marginBottom:20}}>📬 All emails CC: <strong>{CC_ADDR}</strong></p>
+      
+      <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
+        <button onClick={()=>{
+          const allTo=batchEmails.map(e=>e.to).filter(Boolean).join(", ");
+          navigator.clipboard.writeText(allTo);
+        }} style={{padding:"8px 16px",borderRadius:8,border:"none",background:CO.bl,color:CO.wh,fontWeight:700,cursor:"pointer",fontSize:12}}>Copy All To-Addresses (incl. co-pres)</button>
+        <button onClick={()=>navigator.clipboard.writeText(CC_ADDR)} style={{padding:"8px 16px",borderRadius:8,border:"none",background:"rgba(255,209,0,0.2)",color:CO.gd,fontWeight:700,cursor:"pointer",fontSize:12}}>Copy CC Address</button>
+        <button onClick={()=>{
+          const body=batchEmails[0]?.body||"";
+          navigator.clipboard.writeText(body);
+        }} style={{padding:"8px 16px",borderRadius:8,border:"none",background:CO.gd,color:CO.nv,fontWeight:700,cursor:"pointer",fontSize:12}}>Copy Email Template</button>
+        <button onClick={()=>{
+          // Log feedback for every recipient in this batch
+          let log=loadFbLog();
+          for(const e of batchEmails){
+            const clubData=clubs.find(c=>c.club===e.club);
+            const pctAtSend=clubData?clubData.completion:0;
+            if(!log[e.club])log[e.club]=[];
+            log[e.club].push({t:Date.now(),template:batchTemplate,pct:pctAtSend});
+            if(log[e.club].length>20)log[e.club]=log[e.club].slice(-20);
+          }
+          saveFbLog(log);setFbLog(log);
+          alert(`Logged "${batchTemplate.replace(/_/g," ")}" send for ${batchEmails.length} clubs.\n\nUse this AFTER you've actually sent the batch.`);
+        }} style={{padding:"8px 16px",borderRadius:8,border:"none",background:"rgba(61,170,109,0.2)",color:CO.gn,fontWeight:700,cursor:"pointer",fontSize:12}}>Log Batch as Sent</button>
+      </div>
+      
+      <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:20,border:`1px solid ${CO.cr}`}}>
+        <p style={{fontSize:12,fontWeight:700,color:CO.gd,marginBottom:8}}>PREVIEW (first recipient):</p>
+        <pre style={{fontSize:12,color:CO.lt,whiteSpace:"pre-wrap",lineHeight:1.6,fontFamily:"inherit"}}>{batchEmails[0]?.body||"No emails to preview."}</pre>
+      </div>
+      
+      <div style={{marginTop:20}}>
+        <p style={{fontSize:13,fontWeight:700,color:CO.wh,marginBottom:8}}>All Recipients:</p>
+        {batchEmails.map((e,i)=>{
+          const isCoPres=e.to&&e.to.includes(",");
+          return(
+            <div key={i} style={{padding:"6px 0",borderBottom:`1px solid ${CO.cr}`,fontSize:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
+              <span style={{color:CO.lt}}>{e.club} {isCoPres&&<span style={{fontSize:10,background:"rgba(39,116,174,0.2)",color:CO.bl,padding:"1px 6px",borderRadius:4,marginLeft:6}}>co-pres</span>}</span>
+              <span style={{color:CO.mu,textAlign:"right"}}>{e.to||"(no email)"}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const loadCalEvents=async()=>{
+    setCalLoading(true);
+    try{
+      const evts=[];
+      for(const c of clubs){
+        try{
+          const r=await fetch(API+"?action=load&clubName="+encodeURIComponent(c.club),{redirect:"follow"});
+          const d=await r.json();
+          if(d.state&&d.state.events){
+            const ct=CLUB_TYPES[c.club]||c.type||"";
+            for(const ev of d.state.events){
+              if(ev.name&&ev.name.trim()&&ev.projectedDate){
+                evts.push({club:c.club,clubType:ct,name:ev.name,date:ev.projectedDate,eventType:ev.type||"",rank:ev.rank||"",budget:ev.forecastedBudget||"",attendees:ev.expectedParticipants||"",venue:ev.preferredVenue||"",organizer:ev.eventOrganizer||"",ie:ev.includesIE,sustainability:ev.includesSustainability,crossClub:ev.isCrossClub,partner:ev.clubPartner||"",isConference:ev.type&&ev.type.toLowerCase().includes("conference"),isTop3:!!ev.rank});
+              }
+            }
+          }
+        }catch(e){}
+      }
+      setCalEvents(evts);
+    }catch(e){}
+    setCalLoading(false);
+  };
+
+  const getConflicts=(dateStr)=>{
+    const dayEvts=calEvents.filter(e=>e.date===dateStr);
+    const flags=[];
+    const confs=dayEvts.filter(e=>e.isConference);
+    if(confs.length>=2)flags.push({t:"hard",m:"🔴 "+confs.length+" conferences: "+confs.map(e=>e.club).join(", ")});
+    if(dayEvts.length>5)flags.push({t:"soft",m:"🟡 "+dayEvts.length+" events (max 5 recommended)"});
+    if(ACAD[dateStr])flags.push({t:"acad",m:"⚠️ "+ACAD[dateStr]});
+    return flags;
+  };
+
+  const[selDate,setSelDate]=useState(null);
+
+  const renderCalendar=()=>{
+    if(calEvents.length===0&&!calLoading)return(
+      <div style={{textAlign:"center",padding:40}}>
+        <p style={{color:CO.mu,marginBottom:16}}>Load all club events to see the calendar.</p>
+        <button onClick={loadCalEvents} style={{padding:"12px 24px",borderRadius:8,border:"none",background:CO.gd,color:CO.nv,fontWeight:700,cursor:"pointer",fontSize:14}}>Load All Events</button>
+      </div>
+    );
+    if(calLoading)return <div style={{textAlign:"center",padding:60,color:CO.mu}}>Loading events from all clubs...</div>;
+
+    const mo=CAL_MONTHS[calMonth];
+    const cells=getMonthDays(mo.y,mo.m);
+    const moStr=mo.y+"-"+pad2(mo.m);
+    const filteredEvts=typeFilter==="All"?calEvents:calEvents.filter(e=>e.clubType===typeFilter);
+
+    const allDates=[...new Set(calEvents.map(e=>e.date))];
+    const hardConflicts=allDates.filter(d=>{const c=calEvents.filter(e=>e.date===d&&e.isConference);return c.length>=2});
+    const busyDays=allDates.filter(d=>calEvents.filter(e=>e.date===d).length>5);
+
+    return(
+      <div>
+        <div style={{display:"flex",gap:12,marginBottom:16}}>
+          <div style={{padding:"10px 16px",borderRadius:8,background:"rgba(39,116,174,0.1)",borderLeft:"4px solid "+CO.bl}}>
+            <span style={{fontSize:20,fontWeight:800,color:CO.bl}}>{calEvents.length}</span>
+            <span style={{fontSize:11,color:CO.mu,marginLeft:6}}>total events</span>
+          </div>
+          <div style={{padding:"10px 16px",borderRadius:8,background:"rgba(217,79,79,0.1)",borderLeft:"4px solid "+CO.rd}}>
+            <span style={{fontSize:20,fontWeight:800,color:CO.rd}}>{hardConflicts.length}</span>
+            <span style={{fontSize:11,color:CO.mu,marginLeft:6}}>conference conflicts</span>
+          </div>
+          <div style={{padding:"10px 16px",borderRadius:8,background:"rgba(232,146,13,0.1)",borderLeft:"4px solid "+CO.or}}>
+            <span style={{fontSize:20,fontWeight:800,color:CO.or}}>{busyDays.length}</span>
+            <span style={{fontSize:11,color:CO.mu,marginLeft:6}}>busy days (5+)</span>
+          </div>
+          <button onClick={loadCalEvents} style={{padding:"8px 16px",borderRadius:8,border:"none",background:"rgba(255,255,255,0.06)",color:CO.mu,fontWeight:600,fontSize:12,cursor:"pointer",marginLeft:"auto"}}>↻ Reload Events</button>
+          {[{l:"⬇ All Events",f:()=>calEvents},{l:"⬇ Complete Clubs Only",f:()=>{const done=clubs.filter(c=>c.completion>=100).map(c=>c.club);return calEvents.filter(e=>done.includes(e.club))}},{l:"⬇ In Progress Only",f:()=>{const ip=clubs.filter(c=>c.completion>0&&c.completion<100).map(c=>c.club);return calEvents.filter(e=>ip.includes(e.club))}}].map((opt,oi)=>
+            <button key={oi} onClick={()=>{
+              const evts=opt.f();
+              const csv=[["Date","Club","Type","Event","Rank","Attendees","Venue","IE","Sustainability","Cross-Club","Organizer","Conflicts"]];
+              const sorted=[...evts].sort((a,b)=>(a.date||"9").localeCompare(b.date||"9"));
+              for(const ev of sorted){const c=getConflicts(ev.date);csv.push([ev.date,ev.club,ev.clubType,ev.name,ev.rank?"#"+ev.rank:"",ev.attendees,ev.venue,ev.ie?"Yes":"No",ev.sustainability?"Yes":"No",ev.crossClub?"Yes":"No",ev.organizer,c.map(x=>x.m).join("; ")])}
+              const out=csv.map(r=>r.map(c=>'"'+String(c||"").replace(/"/g,'""')+'"').join(",")).join("\n");
+              const b=new Blob([out],{type:"text/csv"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="ASA_Calendar_"+(oi===0?"ALL":oi===1?"Round1":"Round2")+".csv";a.click();URL.revokeObjectURL(u);
+            }} style={{padding:"8px 16px",borderRadius:8,border:"none",background:oi===1?"rgba(61,170,109,0.15)":oi===2?"rgba(39,116,174,0.15)":"rgba(255,255,255,0.06)",color:oi===1?CO.gn:oi===2?CO.bl:CO.mu,fontWeight:600,fontSize:11,cursor:"pointer"}}>{opt.l} ({opt.f().length})</button>
+          )}
+        </div>
+
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+          <button onClick={()=>setCalMonth(Math.max(0,calMonth-1))} style={btn(false)}>← Prev</button>
+          <h2 style={{fontSize:18,fontWeight:800,color:CO.wh}}>{mo.l}</h2>
+          <button onClick={()=>setCalMonth(Math.min(CAL_MONTHS.length-1,calMonth+1))} style={btn(false)}>Next →</button>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:4}}>
+          {DAYS.map(d=><div key={d} style={{textAlign:"center",fontSize:11,fontWeight:700,color:CO.mu,padding:4}}>{d}</div>)}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
+          {cells.map((day,i)=>{
+            if(!day)return <div key={i} style={{minHeight:80}}/>;
+            const ds=moStr+"-"+pad2(day);
+            const dayEvts=filteredEvts.filter(e=>e.date===ds);
+            const conf=getConflicts(ds);
+            const hasHard=conf.some(c=>c.t==="hard");
+            const hasSoft=conf.some(c=>c.t==="soft");
+            const acad=ACAD[ds];
+            return(
+              <div key={i} onClick={()=>setSelDate(ds)} style={{minHeight:80,padding:3,borderRadius:5,cursor:"pointer",
+                background:hasHard?"rgba(217,79,79,0.15)":hasSoft?"rgba(232,146,13,0.1)":acad?"rgba(138,164,184,0.08)":"rgba(255,255,255,0.03)",
+                border:selDate===ds?"2px solid "+CO.bl:"1px solid "+CO.cr}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                  <span style={{fontSize:11,fontWeight:600,color:CO.wh}}>{day}</span>
+                  {dayEvts.length>0&&<span style={{fontSize:9,padding:"1px 5px",borderRadius:8,background:"rgba(39,116,174,0.3)",color:CO.bl}}>{dayEvts.length}</span>}
+                </div>
+                {acad&&<div style={{fontSize:7,color:CO.or,lineHeight:1.2,marginBottom:1}}>{acad}</div>}
+                {dayEvts.slice(0,3).map((ev,j)=>
+                  <div key={j} style={{fontSize:7,padding:"1px 3px",borderRadius:2,marginBottom:1,background:TYPE_COLORS[ev.clubType]||CO.mu,color:"#fff",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
+                    {ev.rank&&<span style={{fontWeight:800}}>#{ev.rank} </span>}{ev.name}
+                  </div>
+                )}
+                {dayEvts.length>3&&<div style={{fontSize:7,color:CO.mu}}>+{dayEvts.length-3} more</div>}
+              </div>
+            );
+          })}
+        </div>
+
+        {selDate&&<div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:16,border:"1px solid "+CO.cr,marginTop:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,color:CO.wh,marginBottom:8}}>{new Date(selDate+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</h3>
+          {getConflicts(selDate).length>0&&<div style={{background:"rgba(217,79,79,0.08)",borderRadius:8,padding:8,marginBottom:10}}>
+            {getConflicts(selDate).map((c,i)=><p key={i} style={{margin:"0 0 3px",fontSize:12,color:c.t==="hard"?CO.rd:c.t==="soft"?CO.or:CO.mu}}>{c.m}</p>)}
+          </div>}
+          {filteredEvts.filter(e=>e.date===selDate).length===0?<p style={{color:CO.mu,fontSize:13}}>No events scheduled.</p>:
+            filteredEvts.filter(e=>e.date===selDate).map((ev,i)=>
+              <div key={i} style={{padding:"8px 10px",borderRadius:8,marginBottom:6,background:"rgba(255,255,255,0.04)",borderLeft:"4px solid "+(TYPE_COLORS[ev.clubType]||CO.mu)}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div>
+                    {ev.rank&&<span style={{display:"inline-block",padding:"2px 8px",borderRadius:10,fontSize:10,fontWeight:700,background:"rgba(255,209,0,0.2)",color:CO.gd,marginRight:6}}>#{ev.rank}</span>}
+                    <span style={{fontSize:13,fontWeight:700,color:CO.wh}}>{ev.name}</span>
+                  </div>
+                  <span style={{display:"inline-block",padding:"2px 8px",borderRadius:10,fontSize:10,fontWeight:700,background:TYPE_COLORS[ev.clubType]||CO.mu,color:"#fff"}}>{ev.clubType}</span>
+                </div>
+                <p style={{fontSize:12,color:CO.lt,margin:"4px 0 2px"}}><strong>{ev.club}</strong></p>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,fontSize:11,color:CO.mu}}>
+                  {ev.eventType&&<span>📋 {ev.eventType}</span>}
+                  {ev.attendees&&<span>👥 {ev.attendees}</span>}
+                  {ev.venue&&<span>📍 {ev.venue}</span>}
+                  {ev.budget&&<span>💰 ${ev.budget}</span>}
+                  {ev.organizer&&<span>🎯 {ev.organizer}</span>}
+                </div>
+              </div>
+            )
+          }
+        </div>}
+
+        {(()=>{
+          const vague=calEvents.filter(e=>!e.date||!/^\d{4}-\d{2}-\d{2}$/.test(e.date));
+          if(vague.length===0)return null;
+          return(
+            <div style={{background:"rgba(217,79,79,0.06)",borderRadius:12,padding:16,border:"1px solid rgba(217,79,79,0.2)",marginTop:16}}>
+              <h3 style={{fontSize:14,fontWeight:700,color:CO.rd,marginBottom:8}}>⚠️ Events Without Exact Dates ({vague.length})</h3>
+              <p style={{fontSize:12,color:CO.mu,marginBottom:10}}>These events won't appear on the calendar until presidents enter dates in YYYY-MM-DD format using the date picker in Mode A.</p>
+              <div style={{background:"rgba(255,255,255,0.04)",borderRadius:8,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead><tr>
+                    {["Club","Event","Current Date Entry","Type","Rank"].map((h,i)=>
+                      <th key={i} style={{padding:"6px 10px",fontSize:11,fontWeight:700,color:CO.mu,textAlign:"left",borderBottom:"1px solid "+CO.cr}}>{h}</th>
+                    )}
+                  </tr></thead>
+                  <tbody>
+                    {vague.map((ev,i)=>
+                      <tr key={i} style={{borderBottom:"1px solid "+CO.cr}}>
+                        <td style={{padding:"6px 10px",fontSize:12,color:CO.wh,fontWeight:600}}>{ev.club}</td>
+                        <td style={{padding:"6px 10px",fontSize:12,color:CO.lt}}>{ev.name}</td>
+                        <td style={{padding:"6px 10px",fontSize:12,color:CO.rd,fontWeight:600}}>{ev.date||"(empty)"}</td>
+                        <td style={{padding:"6px 10px",fontSize:11,color:CO.mu}}>{ev.eventType}</td>
+                        <td style={{padding:"6px 10px",fontSize:12,color:ev.rank?CO.gd:CO.mu}}>{ev.rank?"#"+ev.rank:"—"}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+    );
+  };
+
+  const renderDetail=()=>{
+    if(loadingDetail)return<div style={{textAlign:"center",padding:60,color:CO.mu}}>Loading {selected}...</div>;
+    const flags=getFlags(detail);
+    const pres=PRES[selected];
+    const pct=detail?getPct(detail,selected):0;
+
+    return(
+      <div>
+        <button onClick={()=>{setView("overview");setSelected(null);setDetail(null);setEmailDraft(null)}} style={{padding:"8px 16px",borderRadius:8,border:"none",background:"rgba(255,255,255,0.08)",color:CO.mu,cursor:"pointer",fontWeight:600,marginBottom:20}}>← Back to All Clubs</button>
+
+        <div style={{background:`linear-gradient(135deg,${CO.nv},${CO.bl})`,borderRadius:14,padding:"24px 28px",marginBottom:20,border:`2px solid ${CO.gd}`}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+            <div>
+              <h2 style={{margin:"0 0 4px",fontSize:22,color:CO.wh}}>{selected}</h2>
+              <p style={{margin:0,color:CO.mu,fontSize:13}}>{pres?pres.n+" • "+buildTo(pres):"No president on file"}</p>
+              {(()=>{
+                const last=getLastFb(selected,fbLog);
+                const lastReview=getLastReviewFb(selected,fbLog);
+                const subAt=detail&&detail.submittedAt;
+                const savedAt=detail&&detail.lastSavedAt;
+                const currentPct=detail?getPct(detail,selected):0;
+                if(!last&&!subAt)return null;
+                const badge=computeFbBadge(last,lastReview,subAt,savedAt,currentPct);
+                let headline="";
+                if(badge.key==="resubmitted")headline=`🔔 RESUBMITTED ${fmtDaysAgo(subAt)} — responding to your feedback. You owe them a reply.`;
+                else if(badge.key==="new_submission")headline=`🆕 FIRST-TIME SUBMISSION ${fmtDaysAgo(subAt)} — never reviewed before.`;
+                else if(badge.key==="edited")headline=`✎ Club edited ${fmtDaysAgo(savedAt)} (saved but did not formally resubmit).`;
+                else if(badge.key==="revised_pct")headline=`✓ Likely revised — completion % rose since your feedback.`;
+                else if(badge.key==="awaiting")headline=`⏳ Awaiting revisions — your feedback went out ${fmtDaysAgo(last.t)}.`;
+                // Sub-line: show prior REVIEW feedback if any (vs generic "last"), so nudges don't pollute the context
+                const sub=lastReview?`Prior review: ${lastReview.template.replace(/_/g," ")} sent when plan was at ${lastReview.pct}% (now ${currentPct}%)`:(last?`Last contact: ${last.template.replace(/_/g," ")} (reminder, not a review)`:null);
+                return<div style={{margin:"8px 0 0"}}>
+                  <p style={{margin:0,fontSize:13,color:badge.col,fontWeight:700,letterSpacing:"0.3px"}}>{headline}</p>
+                  {sub&&<p style={{margin:"3px 0 0",fontSize:11,color:CO.mu}}>{sub}</p>}
+                </div>;
+              })()}
+            </div>
+            <div style={{width:70,height:70,borderRadius:"50%",background:`conic-gradient(${CO.gd} ${pct*3.6}deg,rgba(255,255,255,0.1) 0deg)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{width:56,height:56,borderRadius:"50%",background:CO.nv,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <span style={{fontSize:16,fontWeight:800,color:CO.gd}}>{pct}%</span></div></div>
+          </div>
+        </div>
+
+        <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
+          <div style={{flex:"1 1 380px"}}>
+            <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"20px 24px",border:`1px solid ${CO.cr}`,marginBottom:16}}>
+              <h3 style={{margin:"0 0 14px",fontSize:15,color:CO.wh}}>Flags ({flags.length})</h3>
+              {flags.length===0?<p style={{color:CO.gn,fontSize:14}}>No issues — looking great!</p>:
+                flags.map((f,i)=>
+                  <div key={i} style={{padding:"6px 0",borderBottom:i<flags.length-1?`1px solid ${CO.cr}`:"none",display:"flex",alignItems:"center",gap:10}}>
+                    <span style={flagBadge(f.p)}>{f.p.toUpperCase()}</span>
+                    <span style={{fontSize:13,color:CO.lt}}>{f.item}</span>
+                  </div>
+                )}
+            </div>
+
+            {detail&&detail.events&&<div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"20px 24px",border:`1px solid ${CO.cr}`,marginBottom:16}}>
+              <h3 style={{margin:"0 0 14px",fontSize:15,color:CO.wh}}>Events ({detail.events.filter(e=>e.name&&e.name.trim()).length})</h3>
+              {detail.events.filter(e=>e.name&&e.name.trim()).map((ev,i)=>
+                <div key={i} style={{padding:"6px 0",borderBottom:`1px solid ${CO.cr}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div>{ev.rank&&<span style={{fontWeight:800,color:CO.gd,marginRight:8}}>#{ev.rank}</span>}
+                    <span style={{fontSize:13,color:CO.wh}}>{ev.name}</span>
+                    <span style={{fontSize:11,color:CO.mu,marginLeft:8}}>{ev.type}</span></div>
+                  <div style={{fontSize:11,color:CO.mu,textAlign:"right"}}>{ev.projectedDate||"No date"} • {ev.forecastedBudget?"$"+ev.forecastedBudget:"No budget"}</div>
+                </div>
+              )}
+            </div>}
+
+            {detail&&detail.newGoals&&<div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"20px 24px",border:`1px solid ${CO.cr}`}}>
+              <h3 style={{margin:"0 0 14px",fontSize:15,color:CO.wh}}>2026-27 Goals</h3>
+              {detail.newGoals.filter(g=>g.goal&&g.goal.trim()).length>0?
+                detail.newGoals.filter(g=>g.goal&&g.goal.trim()).map((g,i)=>
+                  <div key={i} style={{padding:"8px 0",borderBottom:`1px solid ${CO.cr}`}}>
+                    <span style={{fontSize:12,padding:"2px 8px",borderRadius:8,background:"rgba(39,116,174,0.15)",color:CO.bl,marginRight:8}}>{g.pillar||"No pillar"}</span>
+                    <span style={{fontSize:13,color:CO.wh}}>{g.goal}</span>
+                    {g.metrics&&<p style={{margin:"4px 0 0",fontSize:12,color:CO.mu}}>Metrics: {g.metrics}</p>}
+                  </div>
+                ):<p style={{color:CO.rd,fontSize:13}}>No goals entered yet.</p>}
+            </div>}
+          </div>
+
+          <div style={{flex:"1 1 380px"}}>
+            <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"20px 24px",border:`1px solid ${CO.cr}`,marginBottom:16}}>
+              <h3 style={{margin:"0 0 14px",fontSize:15,color:CO.wh}}>Send Feedback</h3>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+                {[{l:"Custom Review",t:"review"},{l:"✅ Approved / Next Steps",t:"approved"},{l:"Not Started",t:"not_started"},{l:"Halfway",t:"halfway"},{l:"Deadline",t:"deadline_reminder"},{l:"Office Hours",t:"office_hours"}].map(m=>
+                  <button key={m.t} onClick={()=>setEmailDraft({...genEmail(selected,flags,detail,m.t),_template:m.t})} style={{padding:"6px 12px",borderRadius:6,border:"none",background:emailDraft&&emailDraft._template===m.t?"rgba(255,209,0,0.2)":(m.t==="approved"?"rgba(61,170,109,0.18)":"rgba(39,116,174,0.15)"),color:m.t==="approved"?CO.gn:CO.bl,fontWeight:600,fontSize:11,cursor:"pointer"}}>{m.l}</button>
+                )}
+              </div>
+              {emailDraft&&<div>
+                <div style={{fontSize:12,color:CO.mu,marginBottom:4}}>To: <strong style={{color:CO.lt}}>{emailDraft.to||"(no email on file)"}</strong></div>
+                <div style={{fontSize:12,color:CO.mu,marginBottom:4}}>CC: <strong style={{color:CO.lt}}>{emailDraft.cc}</strong></div>
+                <div style={{fontSize:12,color:CO.mu,marginBottom:8}}>Subject: <strong style={{color:CO.lt}}>{emailDraft.subject}</strong></div>
+                <textarea value={emailDraft.body} onChange={e=>setEmailDraft({...emailDraft,body:e.target.value})} style={{width:"100%",minHeight:280,padding:14,borderRadius:10,border:`1px solid ${CO.cr}`,background:"rgba(0,0,0,0.3)",color:CO.lt,fontSize:12,fontFamily:"inherit",resize:"vertical",lineHeight:1.6}}/>
+                <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+                  <button onClick={()=>navigator.clipboard.writeText(emailDraft.body)} style={{padding:"8px 16px",borderRadius:8,border:"none",background:CO.gd,color:CO.nv,fontWeight:700,cursor:"pointer",fontSize:12}}>Copy Body</button>
+                  <button onClick={()=>{
+                    const pctNow=detail?getPct(detail,selected):0;
+                    const updated=logFeedbackSent(selected,emailDraft._template||"review",pctNow);
+                    setFbLog(updated);
+                    window.open("https://mail.google.com/mail/?view=cm&to="+encodeURIComponent(emailDraft.to)+"&cc="+encodeURIComponent(emailDraft.cc||CC_ADDR)+"&su="+encodeURIComponent(emailDraft.subject)+"&body="+encodeURIComponent(emailDraft.body),"_blank");
+                  }} style={{padding:"8px 16px",borderRadius:8,border:"none",background:CO.bl,color:CO.wh,fontWeight:700,cursor:"pointer",fontSize:12}}>Draft in Gmail (logs send)</button>
+                </div>
+                {(()=>{const hist=fbLog[selected]||[];if(hist.length===0)return null;
+                  return<div style={{marginTop:14,paddingTop:12,borderTop:`1px solid ${CO.cr}`}}>
+                    <p style={{fontSize:11,color:CO.mu,marginBottom:6,fontWeight:700}}>Feedback history for {selected}:</p>
+                    {hist.slice().reverse().slice(0,5).map((h,i)=>
+                      <div key={i} style={{fontSize:11,color:CO.lt,marginBottom:3,display:"flex",justifyContent:"space-between"}}>
+                        <span>{new Date(h.t).toLocaleDateString()} — {h.template.replace(/_/g," ")}</span>
+                        <span style={{color:CO.mu}}>was {h.pct}%</span>
+                      </div>
+                    )}
+                    <button onClick={()=>{if(confirm("Clear feedback history for "+selected+"?")){const log={...fbLog};delete log[selected];saveFbLog(log);setFbLog(log)}}} style={{marginTop:6,padding:"3px 8px",borderRadius:4,border:"none",background:"rgba(217,79,79,0.15)",color:CO.rd,fontSize:10,cursor:"pointer"}}>Clear history</button>
+                  </div>;
+                })()}
+              </div>}
+            </div>
+
+            {detail&&detail.ci&&<div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"20px 24px",border:`1px solid ${CO.cr}`,marginBottom:16}}>
+              <h3 style={{margin:"0 0 14px",fontSize:15,color:CO.wh}}>Club Info</h3>
+              {[["President",detail.ci.presidentName],["VP Finance",detail.ci.vpFinanceName],["Advisor",detail.ci.advisor],["Center",detail.ci.affiliatedCenter],["External Acct",detail.ci.externalBank],["Bank Balance",detail.ci.bankBalance]].map(([l,v],i)=>
+                v?<p key={i} style={{fontSize:12,color:CO.lt,margin:"0 0 4px"}}><strong style={{color:CO.mu}}>{l}:</strong> {v}</p>:null
+              )}
+            </div>}
+
+            {detail&&detail.parkerLiaison&&<div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:"20px 24px",border:`1px solid ${CO.cr}`}}>
+              <h3 style={{margin:"0 0 14px",fontSize:15,color:CO.wh}}>Parker</h3>
+              <p style={{fontSize:13,color:CO.lt}}>Liaison: <strong>{detail.parkerLiaison}</strong></p>
+              <p style={{fontSize:12,color:CO.mu,marginTop:4}}>Meeting: {detail.parkerTasks?.meeting?"✅":"❌"} • Assigned: {detail.parkerTasks?.liaison?"✅":"❌"} • Template: {detail.parkerTasks?.template?"✅":"❌"}</p>
+            </div>}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return(
+    <div style={{minHeight:"100vh",background:`linear-gradient(170deg,${CO.nv} 0%,${CO.dn} 40%,#001820 100%)`}}>
+      <div style={{background:`linear-gradient(90deg,${CO.nv},${CO.bl})`,borderBottom:`3px solid ${CO.gd}`,padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{width:38,height:38,background:CO.bl,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:18,color:CO.wh}}>B</div>
+          <div><div style={{fontSize:15,fontWeight:700,color:CO.wh}}>VP Ops Reviewer</div>
+            <div style={{fontSize:11,color:CO.gd}}>Mode B — 2026-2027</div></div></div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>{setView("overview");setSelected(null)}} style={btn(view==="overview")}>All Clubs</button>
+          <button onClick={()=>{setView("calendar")}} style={btn(view==="calendar")}>📅 Calendar</button>
+          <button onClick={()=>{setLoading(true);fetch(API+"?action=status",{redirect:"follow"}).then(r=>r.json()).then(d=>{if(d.statuses){const filtered=d.statuses.filter(c=>!SKIP.some(s=>c.club.includes(s))).map(c=>({...c,type:c.type||CLUB_TYPES[c.club]||""}));setClubs(filtered);loadSubmissions(filtered.map(c=>c.club))}setLoading(false)}).catch(()=>setLoading(false))}} style={btn(false)}>↻ Refresh</button>
+          <button onClick={async()=>{
+            const rows=[["Club","Type","Rank","Event Name","Event Type","Date","Budget","IE?","Sustainability?","Organizer"]];
+            for(const c of clubs){
+              try{
+                const r=await fetch(API+"?action=load&clubName="+encodeURIComponent(c.club),{redirect:"follow"});
+                const d=await r.json();
+                if(d.state&&d.state.events){
+                  for(const rank of["1","2","3"]){
+                    const ev=d.state.events.find(e=>e.rank===rank);
+                    if(ev)rows.push([c.club,c.type||CLUB_TYPES[c.club]||"","#"+rank,ev.name||"",ev.type||"",ev.projectedDate||"",ev.forecastedBudget||"",ev.includesIE?"Yes":"No",ev.includesSustainability?"Yes":"No",ev.eventOrganizer||""]);
+                  }
+                }
+              }catch(e){}
+            }
+            const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");
+            const b=new Blob([csv],{type:"text/csv"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="Top3_Events_All_Clubs.csv";a.click();URL.revokeObjectURL(u);
+          }} style={btn(false)}>⬇ Top 3 CSV</button>
+        </div>
+      </div>
+
+      <div style={{padding:"24px 32px",maxWidth:1200,margin:"0 auto"}}>
+        {loading?<div style={{textAlign:"center",padding:60,color:CO.mu}}>Loading from Google Sheets...{error&&<p style={{marginTop:12,color:CO.or}}>{error}</p>}</div>:
+          view==="overview"?renderOverview():
+          view==="calendar"?renderCalendar():
+          view==="batch"?renderBatch():
+          view==="detail"?renderDetail():null
+        }
+      </div>
+    </div>
+  );
+}
+
+</script>
+</body>
+</html>
